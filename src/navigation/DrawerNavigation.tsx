@@ -5,8 +5,8 @@ import { Button, Text, View } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 // Import screens
-import HomeScreen from './src/screens/HomeScreen';  // Assuming you have HomeScreen component
-import DrawerScreen from './src/screens/DrawerScreen';  // Assuming you have DrawerScreen component
+import HomeScreen from './screens/HomeScreen';  // Assuming you have HomeScreen component
+import DrawerScreen from './screens/DrawerScreen';  // Assuming you have DrawerScreen component
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
