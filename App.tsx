@@ -1,34 +1,11 @@
 import React from 'react';
+import DrawerNavigation from './src/navigation/DrawerNavigation';
 import { NavigationContainer } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Button, Text, View } from 'react-native';
-import { createStackNavigator } from '@react-navigation/stack';
-
-// Import screens
-import HomeScreen from './src/screens/HomeScreen';  // Assuming you have HomeScreen component
-import DrawerScreen from './src/screens/DrawerScreen';  // Assuming you have DrawerScreen component
-
-const Stack = createStackNavigator();
-const Drawer = createDrawerNavigator();
-
-// Define Drawer Menu
-function DrawerMenu() {
-  return (
-    <Drawer.Navigator initialRouteName="Home">
-      <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="DrawerScreen" component={DrawerScreen} />
-    </Drawer.Navigator>
-  );
-}
 
 // Define Stack Navigation
 function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="DrawerMenu" component={DrawerMenu} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <DrawerNavigation />
   );
 }
 

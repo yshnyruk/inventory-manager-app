@@ -1,15 +1,22 @@
+import { DrawerNavigationProp } from '@react-navigation/drawer';
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { RootDrawerParamList } from '../navigation/DrawerNavigation';
 
-const items = Array.from({ length: 5 }, (_, i) => `Item ${i + 1}`); // Sample data
+interface HomeScreenProps {
+  navigation: DrawerNavigationProp<RootDrawerParamList, 'Home'>;
+}
 
-export default function HomeScreen() {
+const HomeScreen = ({ navigation }: HomeScreenProps) => {
+  const items = Array.from({ length: 5 }, (_, i) => `Item ${i + 1}`); // Sample data
+
   return (
     <View style={styles.container}>
       {/* Top Bar */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Icon name="bars" size={24} color="#000" />
         </TouchableOpacity>
         <TextInput
@@ -41,7 +48,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
     </View>
-    );
+  );
 }
 
 const styles = StyleSheet.create({
@@ -102,4 +109,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  }})
+  }
+})
+
+export default HomeScreen;
