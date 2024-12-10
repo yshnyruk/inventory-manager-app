@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal, Button } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { RootDrawerParamList } from '../navigation/DrawerNavigation';
-import { selectAll, spaceList, dropTable } from '../../db';
+import { initDatabase, Content } from '../../db';
+import { SQLiteProvider } from 'expo-sqlite';
 
 interface HomeScreenProps {
   navigation: DrawerNavigationProp<RootDrawerParamList, 'Home'>;
@@ -13,7 +14,6 @@ interface HomeScreenProps {
 const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [spaceName, setSpaceName] = useState('');
-  const { spaces, handleAddSpaces } = spaceList();
 
   return (
     <View style={styles.container}>
@@ -30,67 +30,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
       </View>
 
       {/* List of Items */}
-      <FlatList
-        data={spaces}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.listItem}>
-            <Text style={styles.listItemText}>{item.name}</Text>
-          </View>
-        )}
-        contentContainerStyle={styles.listContainer}
-      />
-
-      {/* Bottom Buttons */}
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity style={styles.button} onPress={() => console.log(spaces)}>
-          <Text style={styles.buttonText}>Initialize DB</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-          <Text style={styles.buttonText}>Add Space</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => {}}>
-          <Text style={styles.buttonText}>Select Spaces</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => dropTable()}>
-          <Text style={styles.buttonText}>Drop Table</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal Popup */}
-      <Modal
-        transparent
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.title}>Name Your Space</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter space name"
-              value={spaceName}
-              onChangeText={setSpaceName}
-            />
-            <View style={styles.buttonRow}>
-              <Button title="Close" onPress={() => {
-                setModalVisible(false);
-                setSpaceName('')
-              }} />
-              <Button
-                title="Create"
-                onPress={() => {
-                  handleAddSpaces(spaceName); 
-                  setModalVisible(false); 
-                  setSpaceName('')
-                }}
-                disabled={spaceName.trim().length === 0}
-              />
-            </View>
-          </View>
-        </View>
-      </Modal>
-
+        <Content navigation={navigation}/>
     </View>
   );
 }

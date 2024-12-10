@@ -1,11 +1,15 @@
 import React from 'react';
-import DrawerNavigation from './src/navigation/DrawerNavigation';
 import { NavigationContainer } from '@react-navigation/native';
+import StackNavigation from './src/navigation/StackNavigation';
+import { SQLiteProvider } from 'expo-sqlite';
+import { initDatabase } from './db';
 
 // Define Stack Navigation
 function App() {
   return (
-    <DrawerNavigation />
+    <SQLiteProvider databaseName='add.db' onInit={initDatabase}>
+      <StackNavigation />
+    </SQLiteProvider>
   );
 }
 

@@ -42,7 +42,6 @@ const CustomDrawerContent = (props: DrawerContentComponentProps) => {
 
 const DrawerNavigation = () => {
   return (
-    <NavigationContainer>
       <Drawer.Navigator
         initialRouteName='Home'
         screenOptions={{ headerShown: false }}
@@ -56,7 +55,6 @@ const DrawerNavigation = () => {
         <Drawer.Screen name='Settings' component={SettingsScreen} />
         <Drawer.Screen name='History' component={HistoryScreen} />
       </Drawer.Navigator>
-    </NavigationContainer>
   )
 }
 
