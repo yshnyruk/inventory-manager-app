@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import React from 'react'
-import { DrawerNavigationProp } from '@react-navigation/drawer'
-import { RootDrawerParamList } from '../navigation/DrawerNavigation'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { DrawerNavigationProp } from '@react-navigation/drawer';
+import { RootDrawerParamList } from '../navigation/RootNavigation';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Header from '../components/Header';
 
 interface HistoryScreenProps {
   navigation: DrawerNavigationProp<RootDrawerParamList, 'History'>;
@@ -11,25 +12,15 @@ interface HistoryScreenProps {
 const HistoryScreen = ({ navigation }: HistoryScreenProps) => {
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.navigate('Home')}>
-          <Icon name="arrow-left" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>History</Text>
-        </View>
-      </View>
+      <Header label='History' navigation={navigation} />
 
       {/* Main Content */}
       <View style={styles.content}>
         <Text style={styles.contentText}>This is your history screen.</Text>
       </View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -76,4 +67,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HistoryScreen
+export default HistoryScreen;

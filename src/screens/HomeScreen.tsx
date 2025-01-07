@@ -1,129 +1,172 @@
-import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal, Button } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { RootDrawerParamList } from '../navigation/DrawerNavigation';
-import { initDatabase, Content } from '../../db';
-import { SQLiteProvider } from 'expo-sqlite';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { styles } from '../styles';
+import { StackScreenProps } from '@react-navigation/stack';
+import { HomeStackParamList } from '../navigation/HomeStackNavigation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AddSpacePopup from '../modals/AddSpacePopup';
+import AddItemPopup from '../modals/AddItemPopup';
+import BottomButtons from '../components/BottomButtons';
+import Link from '../components/Link';
+import Search from '../components/Search';
+import Content from '../components/Content';
+import { useFocusEffect } from '@react-navigation/native';
 
-interface HomeScreenProps {
-  navigation: DrawerNavigationProp<RootDrawerParamList, 'Home'>;
+// Define the type for HomeScreenProps
+export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
+
+// Define the interface for Space
+export interface Space {
+  id: string;
+  name: string;
+  additionalInf: string;
+  activeFrom: Date;
+  activeTo?: Date;
+  parentId: string;
 }
 
-const HomeScreen = ({ navigation }: HomeScreenProps) => {
+// Define the interface for Item
+export interface Item {
+  id: string;
+  name: string;
+  additionalInf: string;
+  activeFrom: Date;
+  activeTo?: Date;
+  parentId: string;
+  category: string;
+  number: number;
+  expiryDate: Date;
+  weightVolume: string;
+}
+
+const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
+  // State for spaces, items, modal visibility, space name, search, and item popup visibility
+  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [spaceName, setSpaceName] = useState('');
+  const [search, setSearch] = useState('');
+  const [itemPopupVisible, setItemPopupVisible] = useState(false);
+  const [addItemVisible, setAddItemVisible] = useState(false);
+  // Determine the current space ID based on route parameters
+  const currentSpaceId = route.params?.parentId || 'Root';
+
+  // Function to load data from AsyncStorage
+  const loadData = async () => {
+    try {
+      const storedSpaces = await AsyncStorage.getItem('spaces');
+      const storedItems = await AsyncStorage.getItem('items');
+
+      if (storedSpaces) {
+        const parsedSpaces = JSON.parse(storedSpaces);
+        setSpaces(parsedSpaces);
+        console.log('Loaded spaces:', parsedSpaces);
+      }
+
+      if (storedItems) {
+        const parsedItems = JSON.parse(storedItems);
+        setItems(parsedItems);
+        console.log('Loaded items:', parsedItems);
+      }
+    } catch (error) {
+      console.error('Failed to load data:', error);
+    }
+  };
+
+  // Load data from AsyncStorage when the component mounts
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
+
+  // Function to handle adding a new space
+  const handleAddSpace = (name: string) => {
+    const newSpace: Space = {
+      id: Date.now().toString(),
+      name,
+      additionalInf: '',
+      activeFrom: new Date(),
+      parentId: currentSpaceId,
+    };
+
+    setSpaces((prevSpaces) => {
+      const updatedSpaces = [...prevSpaces, newSpace];
+
+      AsyncStorage.setItem('spaces', JSON.stringify(updatedSpaces))
+        .then(() => console.log('Spaces saved successfully!'))
+        .catch((error) => console.error('Failed to save spaces:', error));
+
+      return updatedSpaces;
+    });
+
+    setModalVisible(false);
+    console.log('Added space:', newSpace);
+  };
+
+  // Function to get filtered data based on search and current space ID
+  const getFilteredData = useCallback(() => {
+    const lowerSearch = search.toLowerCase();
+    const currentParentId = route.params?.parentId || 'Root';
+
+    const filteredSpaces = spaces.filter(
+      (item) =>
+        item.name.toLowerCase().includes(lowerSearch) &&
+        item.parentId === currentParentId
+    );
+
+    const filteredItems = items.filter(
+      (item) =>
+        item.name.toLowerCase().includes(lowerSearch) &&
+        item.parentId === currentParentId
+    );
+
+    return { filteredSpaces, filteredItems };
+  }, [search, spaces, items, route.params?.parentId]);
+
+  // Get filtered data
+  const { filteredSpaces, filteredItems } = getFilteredData();
+
+  const handleDeleteSuccess = () => {
+    loadData(); // Reload data to refresh the list
+  };
 
   return (
     <View style={styles.container}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
-          <Icon name="bars" size={24} color="#000" />
-        </TouchableOpacity>
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search"
-          placeholderTextColor="#999"
-        />
-      </View>
-
-      {/* List of Items */}
-        <Content navigation={navigation}/>
+      <Search search={search} setSearch={setSearch} navigation={navigation} />
+      <Link id={currentSpaceId} spaces={spaces} />
+      <Content
+        filteredSpaces={spaces}
+        filteredItems={items}
+        onDeleteSuccess={handleDeleteSuccess}
+      />
+      <BottomButtons
+        onAddSpace={() => setModalVisible(true)}
+        onAddItem={() => setItemPopupVisible(true)}
+      />
+      <AddSpacePopup
+        visible={modalVisible}
+        spaceName={spaceName}
+        setSpaceName={setSpaceName}
+        onClose={() => {
+          setModalVisible(false);
+          setSpaceName('');
+        }}
+        onSave={handleAddSpace}
+      />
+      <AddItemPopup
+        navigation={navigation}
+        visible={itemPopupVisible}
+        onClose={() => setItemPopupVisible(false)}
+        parentId={currentSpaceId}
+        onEnterDetails={() => {
+          setItemPopupVisible(false);
+          setAddItemVisible(true);
+        }}
+        onScanBarcode={() => {}}
+      />
     </View>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 24,
-    backgroundColor: '#f8f8f8',
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    elevation: 2,
-  },
-  searchBar: {
-    flex: 1,
-    marginLeft: 10,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: '#e6e6e6',
-    paddingHorizontal: 10,
-  },
-  listContainer: {
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-  },
-  listItem: {
-    padding: 15,
-    backgroundColor: '#fff',
-    marginBottom: 10,
-    borderRadius: 8,
-    elevation: 1,
-  },
-  listItemText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  bottomButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    paddingVertical: 20,
-    backgroundColor: '#fff',
-    elevation: 2,
-  },
-  button: {
-    flex: 1,
-    marginHorizontal: 5,
-    paddingVertical: 15,
-    borderRadius: 8,
-    backgroundColor: '#007bff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0,)',
-  },
-  modalContent: {
-    width: 300,
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    elevation: 10,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  input: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-})
+};
 
 export default HomeScreen;

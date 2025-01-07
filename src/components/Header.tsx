@@ -1,20 +1,24 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { RootDrawerParamList } from '../navigation/RootNavigation';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { DrawerScreenProps } from '@react-navigation/drawer';
-import Header from '../components/Header';
+import { COLORS } from '../styles';
 
-type Props = DrawerScreenProps<RootDrawerParamList, 'Settings'>;
+interface Props {
+  label: string;
+  navigation: any;
+}
 
-const SettingsScreen = ({ navigation }: Props) => {
+const Header = ({ label, navigation }: Props) => {
   return (
-    <View style={styles.container}>
-      <Header navigation={navigation} label='Settings' />
-
-      {/* Main Content */}
-      <View style={styles.content}>
-        <Text style={styles.contentText}>This is your settings screen.</Text>
+    <View style={styles.header}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Icon name='arrow-left' size={24} color={COLORS['dark-text-green']} />
+      </TouchableOpacity>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>{label}</Text>
       </View>
     </View>
   );
@@ -28,19 +32,19 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
+    alignItems: 'flex-end',
+    backgroundColor: COLORS['light-green'],
+    paddingVertical: 12,
     paddingHorizontal: 15,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
     elevation: 3,
+    height: 112,
   },
   backButton: {
     width: 30,
-    height: 30,
-    justifyContent: 'center',
+    height: 36,
     alignItems: 'center',
+    position: 'absolute',
+    margin: 12,
   },
   titleContainer: {
     flex: 1,
@@ -48,8 +52,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#fff',
-    fontSize: 20,
+    color: COLORS['dark-text-green'],
+    fontSize: 24,
     fontWeight: 'bold',
   },
   content: {
@@ -65,4 +69,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SettingsScreen;
+export default Header;

@@ -1,16 +1,9 @@
+import './gesture-handler';
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import StackNavigation from './src/navigation/StackNavigation';
-import { SQLiteProvider } from 'expo-sqlite';
-import { initDatabase } from './db';
+import RootNavigation from './src/navigation/RootNavigation';
 
-// Define Stack Navigation
 function App() {
-  return (
-    <SQLiteProvider databaseName='add.db' onInit={initDatabase}>
-      <StackNavigation />
-    </SQLiteProvider>
-  );
+  return <RootNavigation />;
 }
 
 export default App;
