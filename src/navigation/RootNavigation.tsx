@@ -4,7 +4,9 @@ import SettingsScreen from '../screens/SettingsScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import CustomDrawerContent from '../components/CustomDrawer';
 import { NavigationContainer } from '@react-navigation/native';
-import HomeStackNavigation, { HomeStackParamList } from './HomeStackNavigation';
+import HomeStackNavigation, {
+  HomeStackParamList,
+} from './stack/HomeStackNavigation';
 
 export type RootDrawerParamList = {
   HomeStack: undefined;

@@ -1,37 +1,25 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { memo, useState, useEffect } from 'react';
-import { View, Pressable, Text } from 'react-native';
-import { styles } from '../styles';
+import { View, Pressable, Text, StyleSheet } from 'react-native';
 import { Space } from '../screens/HomeScreen';
 import { HomeScreenProps } from '../screens/HomeScreen';
+import { buildPath } from '../utils';
+import { getData } from '../services';
 
-// Memoized component to optimize performance
-const Link = memo(({ id, spaces }: { id: string; spaces: Space[] }) => {
-  // Using navigation hook to navigate between screens
+const Link = memo(({ id }: { id: string }) => {
   const navigation = useNavigation<HomeScreenProps['navigation']>();
-  // State to hold the path of spaces
   const [path, setPath] = useState<Array<{ id: string; name: string }>>([]);
 
   // Effect to build the path of spaces when the component mounts or spaces change
   useEffect(() => {
-    const buildPath = (currentId: string) => {
-      const result = [];
-      let current = currentId;
-      // Loop to build the path from the current space to the root
-      while (current !== 'Root') {
-        const space = spaces.find((s: any) => s.id === current);
-        if (space) {
-          // Prepending the current space to the result array
-          result.unshift({ id: space.id, name: space.name });
-          current = space.parentId;
-        } else break;
-      }
-      // Updating the state with the built path
-      setPath(result);
+    const loadLink = async () => {
+      const spaces = await getData('spaces');
+      const pathRes = buildPath(id, spaces);
+      setPath(pathRes);
     };
 
-    buildPath(id);
-  }, [id, spaces]);
+    loadLink();
+  }, [id]);
 
   // Function to handle navigation when a path item is clicked
   const handlePathClick = (pathId: string) => {
@@ -57,6 +45,18 @@ const Link = memo(({ id, spaces }: { id: string; spaces: Space[] }) => {
       ))}
     </View>
   );
+});
+
+const styles = StyleSheet.create({
+  link: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  pathLink: {
+    color: '#65558F',
+    textDecorationLine: 'underline',
+  },
 });
 
 export default Link;

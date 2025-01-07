@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View, StyleSheet } from 'react-native';
 import { Item, Space } from '../screens/HomeScreen';
-import { styles } from '../styles';
 import SpaceItem from './SpaceItem';
+import { COLORS } from '../styles';
 
 const Content = memo(
   ({ filteredSpaces, filteredItems, onDeleteSuccess }: any) => (
@@ -32,5 +32,19 @@ const Content = memo(
     </ScrollView>
   )
 );
+
+const styles = StyleSheet.create({
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: '400',
+    color: COLORS.black,
+  },
+  contentContainer: {
+    flex: 1,
+    gap: 3,
+  },
+});
 
 export default Content;

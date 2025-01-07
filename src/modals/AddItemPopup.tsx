@@ -1,9 +1,9 @@
 import React, { memo } from 'react';
-import { Modal, Pressable, View, Text } from 'react-native';
+import { Modal, Pressable, View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { styles } from '../styles';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { HomeStackParamList } from '../navigation/HomeStackNavigation';
+import { HomeStackParamList } from '../navigation/stack/HomeStackNavigation';
+import { COLORS } from '../styles';
 
 interface AddItemPopupProps {
   navigation: StackNavigationProp<HomeStackParamList, 'Home'>;
@@ -49,5 +49,42 @@ const AddItemPopup = memo<AddItemPopupProps>(
     );
   }
 );
+
+const styles = StyleSheet.create({
+  itemPopupContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingBottom: 65,
+    paddingRight: 90,
+  },
+  itemPopupContent: {
+    backgroundColor: 'white',
+    borderWidth: 4,
+    borderColor: COLORS['input-stroke'],
+    borderRadius: 12,
+    padding: 16,
+    gap: 8,
+    width: 250,
+  },
+  itemPopupButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    borderBottomColor: '#CAC4D0',
+  },
+  itemPopupText: {
+    fontSize: 16,
+    color: '#49454F',
+  },
+  divider: {
+    marginTop: 3,
+    height: 1,
+    backgroundColor: COLORS.divider,
+    width: '100%',
+  },
+});
 
 export default AddItemPopup;

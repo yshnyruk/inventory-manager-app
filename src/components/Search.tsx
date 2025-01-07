@@ -1,7 +1,7 @@
 import { memo } from 'react';
-import { View, TextInput } from 'react-native';
+import { View, TextInput, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { styles } from '../styles';
+import { COLORS, SHADOWS } from '../styles';
 
 const Search = memo(({ search, setSearch, navigation }: any) => (
   <View style={styles.headerContainer}>
@@ -27,5 +27,28 @@ const Search = memo(({ search, setSearch, navigation }: any) => (
     />
   </View>
 ));
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    marginBottom: 12,
+    borderRadius: 8,
+    backgroundColor: COLORS['light-green'],
+    ...SHADOWS.light,
+  },
+  icon: {
+    paddingLeft: 6,
+    width: 36,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    color: COLORS['input-text'],
+  },
+});
 
 export default Search;

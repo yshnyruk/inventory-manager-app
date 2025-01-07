@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View } from 'react-native';
-import { styles } from '../styles';
+import { View, StyleSheet } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import { HomeStackParamList } from '../navigation/HomeStackNavigation';
+import { HomeStackParamList } from '../navigation/stack/HomeStackNavigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AddSpacePopup from '../modals/AddSpacePopup';
 import AddItemPopup from '../modals/AddItemPopup';
@@ -11,6 +10,8 @@ import Link from '../components/Link';
 import Search from '../components/Search';
 import Content from '../components/Content';
 import { useFocusEffect } from '@react-navigation/native';
+import { getData, setData } from '../services';
+import { COLORS } from '../styles';
 
 // Define the type for HomeScreenProps
 export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
@@ -53,24 +54,10 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
 
   // Function to load data from AsyncStorage
   const loadData = async () => {
-    try {
-      const storedSpaces = await AsyncStorage.getItem('spaces');
-      const storedItems = await AsyncStorage.getItem('items');
-
-      if (storedSpaces) {
-        const parsedSpaces = JSON.parse(storedSpaces);
-        setSpaces(parsedSpaces);
-        console.log('Loaded spaces:', parsedSpaces);
-      }
-
-      if (storedItems) {
-        const parsedItems = JSON.parse(storedItems);
-        setItems(parsedItems);
-        console.log('Loaded items:', parsedItems);
-      }
-    } catch (error) {
-      console.error('Failed to load data:', error);
-    }
+    const spaces = await getData('spaces');
+    const items = await getData('items');
+    setSpaces(spaces);
+    setItems(items);
   };
 
   // Load data from AsyncStorage when the component mounts
@@ -92,16 +79,11 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
 
     setSpaces((prevSpaces) => {
       const updatedSpaces = [...prevSpaces, newSpace];
-
-      AsyncStorage.setItem('spaces', JSON.stringify(updatedSpaces))
-        .then(() => console.log('Spaces saved successfully!'))
-        .catch((error) => console.error('Failed to save spaces:', error));
-
+      setData('spaces', updatedSpaces);
       return updatedSpaces;
     });
 
     setModalVisible(false);
-    console.log('Added space:', newSpace);
   };
 
   // Function to get filtered data based on search and current space ID
@@ -134,10 +116,10 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
   return (
     <View style={styles.container}>
       <Search search={search} setSearch={setSearch} navigation={navigation} />
-      <Link id={currentSpaceId} spaces={spaces} />
+      <Link id={currentSpaceId} />
       <Content
-        filteredSpaces={spaces}
-        filteredItems={items}
+        filteredSpaces={filteredSpaces}
+        filteredItems={filteredItems}
         onDeleteSuccess={handleDeleteSuccess}
       />
       <BottomButtons
@@ -168,5 +150,14 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    paddingTop: 48,
+    backgroundColor: COLORS.bg,
+  },
+});
 
 export default HomeScreen;

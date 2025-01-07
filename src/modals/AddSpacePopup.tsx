@@ -17,9 +17,8 @@ const AddSpacePopup = memo(({ visible, onClose, onSave }: any) => {
       const randomIndex = Math.floor(Math.random() * 100) + 1;
       setSpaceName(`Space ${randomIndex + 1}`);
     };
-
     generateRandomSpaceName();
-  }, []);
+  }, [visible]);
 
   return (
     <Modal transparent visible={visible}>
