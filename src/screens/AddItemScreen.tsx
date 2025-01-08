@@ -14,11 +14,21 @@ import Header from '../components/Header';
 import { getData, setData } from '../services';
 import AddItemForm from '../components/AddItemForm';
 import { Item } from './HomeScreen';
+import * as ImagePicker from 'expo-image-picker';
 
 type AddItemScreenProps = StackScreenProps<HomeStackParamList, 'AddItem'>;
 
 const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
   const existingItem = route.params?.item;
+  const selectPhoto = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+    });
+
+    if (result.assets && result.assets.length > 0) {
+      setFormData({ ...formData, photoUri: result.assets[0].uri });
+    }
+  };
 
   const [formData, setFormData] = useState(
     () =>
@@ -36,6 +46,7 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
         additionalInf: `Additional info ${Math.floor(Math.random() * 1000)}`, // Random additional information
         activeFrom: new Date(),
         parentId: route.params?.parentId || 'Root',
+        photoUri: undefined,
       }
   );
 
@@ -57,7 +68,11 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
   return (
     <View>
       <Header label='Add Item' navigation={navigation} />
-      <AddItemForm formData={formData} setFormData={setFormData} />
+      <AddItemForm
+        formData={formData}
+        setFormData={setFormData}
+        onSelectPhoto={selectPhoto}
+      />
       <TouchableOpacity style={styles.button} onPress={() => handleAddItem()}>
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Item } from '../screens/HomeScreen';
+import { Item, Space } from '../screens/HomeScreen';
 
 export const getData = async (key: string) => {
   try {
@@ -43,49 +43,108 @@ export const setItem = async (id: string, updatedItem: Item, type: string) => {
   }
 };
 
-export const deleteItemCasc = async (
-  itemId: string,
-  type: string,
-  onDeleteSuccess: () => {}
-) => {
-  const storageKey = type === 'space' ? 'spaces' : 'items';
-
+export const deleteCasc = async (spaceId: string) => {
   try {
-    const data = await AsyncStorage.getItem(storageKey);
+    const spaces = await getData('spaces');
+    const items = await getData('items');
 
-    if (data) {
-      const items = JSON.parse(data) as Array<{
-        id: string;
-        parentId?: string;
-      }>;
-      const getChildrenIds = (
-        parentId: string,
-        items: Array<{ id: string; parentId?: string }>
-      ) => {
-        const children = items.filter((item) => item.parentId === parentId);
-        let allChildrenIds = children.map((child) => child.id);
-
-        children.forEach((child) => {
-          allChildrenIds = allChildrenIds.concat(
-            getChildrenIds(child.id, items)
-          );
-        });
-
-        return allChildrenIds;
-      };
-      const idsToDelete =
-        type === 'space'
-          ? [itemId, ...getChildrenIds(itemId, items)]
-          : [itemId];
-      const updatedItems = items.filter(
-        (item) => !idsToDelete.includes(item.id)
+    const findChildSpaces = (id: string): Space[] => {
+      const childSpaces = spaces.filter((e: Space) => e.parentId === id);
+      return childSpaces.reduce(
+        (acc: Space[], space: Space) => [
+          ...acc,
+          space,
+          ...findChildSpaces(space.id),
+        ],
+        []
       );
-      await AsyncStorage.setItem(storageKey, JSON.stringify(updatedItems));
+    };
 
-      console.log(`${type} with ID ${itemId} and its children were deleted.`);
-      onDeleteSuccess();
-    }
+    const spacesToDelete = [
+      spaceId,
+      ...findChildSpaces(spaceId).map((p) => p.id),
+    ];
+
+    const updatedSpaces = spaces.filter(
+      (e: Space) => !spacesToDelete.includes(e.id)
+    );
+    await setData('spaces', updatedSpaces);
+
+    const updatedItems = items.filter(
+      (item: Item) => !spacesToDelete.includes(item.parentId)
+    );
+    await setData('items', updatedItems);
   } catch (error) {
     console.error('Failed to delete item:', error);
   }
+};
+
+export const deleteOne = async (id: string, key: string) => {
+  const data = await getData(key);
+  const updatedData = data.filter((e: Item | Space) => e.id !== id);
+  await setData(key, updatedData);
+};
+
+export const hasChildren = async (spaceId: string): Promise<boolean> => {
+  const spaces = await getData('spaces');
+  const items = await getData('items');
+
+  const hasChildPlaces = spaces.some(
+    (space: Space) => space.parentId === spaceId
+  );
+  const hasItems = items.some((item: Item) => item.parentId === spaceId);
+  return hasChildPlaces || hasItems;
+};
+
+export const toHistoryCasc = async (spaceId: string) => {
+  try {
+    const spaces = await getData('spaces');
+    const items = await getData('items');
+
+    const findChildSpaces = (id: string): Space[] => {
+      const childSpaces = spaces.filter((e: Space) => e.parentId === id);
+      return childSpaces.reduce(
+        (acc: Space[], space: Space) => [
+          ...acc,
+          space,
+          ...findChildSpaces(space.id),
+        ],
+        []
+      );
+    };
+
+    const spacesToUpdate = [
+      spaceId,
+      ...findChildSpaces(spaceId).map((p) => p.id),
+    ];
+
+    const updatedSpaces = spaces.map((space: Space) =>
+      spacesToUpdate.includes(space.id)
+        ? { ...space, activeTo: new Date() }
+        : space
+    );
+    await setData('spaces', updatedSpaces);
+
+    const updatedItems = items.map((item: Item) =>
+      spacesToUpdate.includes(item.parentId)
+        ? { ...item, activeTo: new Date() }
+        : item
+    );
+    await setData('items', updatedItems);
+  } catch (error) {
+    console.error('Failed to update history:', error);
+  }
+};
+
+export const toHistory = async (id: string, key: string) => {
+  const data: (Item | Space)[] = await getData(key);
+  const itemIndex = data.findIndex((e) => e.id === id);
+  if (itemIndex === -1) {
+    throw new Error(`Item with id ${id} not found in key ${key}`);
+  }
+  data[itemIndex] = {
+    ...data[itemIndex],
+    activeTo: new Date(),
+  };
+  await setData(key, data);
 };

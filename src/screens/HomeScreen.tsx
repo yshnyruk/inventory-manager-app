@@ -38,6 +38,7 @@ export interface Item {
   number: number;
   expiryDate: Date;
   weightVolume: string;
+  photoUri?: string;
 }
 
 const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
@@ -94,13 +95,15 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
     const filteredSpaces = spaces.filter(
       (item) =>
         item.name.toLowerCase().includes(lowerSearch) &&
-        item.parentId === currentParentId
+        item.parentId === currentParentId &&
+        item.activeTo === undefined
     );
 
     const filteredItems = items.filter(
       (item) =>
         item.name.toLowerCase().includes(lowerSearch) &&
-        item.parentId === currentParentId
+        item.parentId === currentParentId &&
+        item.activeTo === undefined
     );
 
     return { filteredSpaces, filteredItems };

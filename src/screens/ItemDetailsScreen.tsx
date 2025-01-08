@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import Header from '../components/Header';
@@ -36,7 +37,11 @@ const ItemDetailsScreen = ({ route, navigation }: Props) => {
     <View style={styles.flexContainer}>
       <Header label={item?.name || 'Loading...'} navigation={navigation} />
       <View style={styles.flexContainer}>
-        <View style={styles.img}></View>
+        {item?.photoUri ? (
+          <Image source={{ uri: item.photoUri }} style={styles.img}></Image>
+        ) : (
+          <View style={styles.img}></View>
+        )}
         <View style={styles.flexContainer}></View>
         <View style={styles.content}>
           <TouchableOpacity
