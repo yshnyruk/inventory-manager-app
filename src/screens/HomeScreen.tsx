@@ -20,7 +20,7 @@ export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
 export interface Space {
   id: string;
   name: string;
-  additionalInf: string;
+  emoji?: string;
   activeFrom: Date;
   activeTo?: Date;
   parentId: string;
@@ -34,11 +34,11 @@ export interface Item {
   activeFrom: Date;
   activeTo?: Date;
   parentId: string;
-  category: string;
   number: number;
   expiryDate: Date;
   weightVolume: string;
   photoUri?: string;
+  emoji?: string;
 }
 
 const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
@@ -73,7 +73,6 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
     const newSpace: Space = {
       id: Date.now().toString(),
       name,
-      additionalInf: '',
       activeFrom: new Date(),
       parentId: currentSpaceId,
     };
@@ -118,12 +117,18 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
 
   return (
     <View style={styles.container}>
-      <Search search={search} setSearch={setSearch} navigation={navigation} />
-      <Link id={currentSpaceId} />
+      <Search
+        search={search}
+        setSearch={setSearch}
+        navigation={navigation}
+        leftIcon='bars'
+      />
+      <Link id={currentSpaceId} initialRoute='Home' navigationStr='Home' />
       <Content
         filteredSpaces={filteredSpaces}
         filteredItems={filteredItems}
         onDeleteSuccess={handleDeleteSuccess}
+        context='home'
       />
       <BottomButtons
         onAddSpace={() => setModalVisible(true)}
@@ -142,6 +147,7 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
       <AddItemPopup
         navigation={navigation}
         visible={itemPopupVisible}
+        setVisible={setModalVisible}
         onClose={() => setItemPopupVisible(false)}
         parentId={currentSpaceId}
         onEnterDetails={() => {

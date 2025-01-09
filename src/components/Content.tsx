@@ -1,45 +1,93 @@
 import React, { memo, useState } from 'react';
-import { ScrollView, Text, View, StyleSheet } from 'react-native';
+import {
+  ScrollView,
+  Text,
+  View,
+  StyleSheet,
+  Modal,
+  Pressable,
+} from 'react-native';
 import { Item, Space } from '../screens/HomeScreen';
 import SpaceItem from './SpaceItem';
-import { COLORS } from '../styles';
+import { COLORS, SHADOWS } from '../styles';
+import EmojiSelector from 'react-native-emoji-selector';
+import { getData } from '../services';
+import { updateObject } from '../services/storageService';
+
+type SelectedItem = {
+  id: string;
+  type: 'items' | 'spaces';
+};
 
 const Content = memo(
-  ({ filteredSpaces, filteredItems, onDeleteSuccess }: any) => {
+  ({ filteredSpaces, filteredItems, onDeleteSuccess, context }: any) => {
     const [isScrolling, setIsScrolling] = useState(true);
-
+    const [emoji, setEmoji] = useState(false);
     const disableScroll = () => setIsScrolling(false);
     const enableScroll = () => setIsScrolling(true);
+    const [selectedItem, setSelectedItem] = useState<SelectedItem>({
+      id: '',
+      type: 'items',
+    });
+
+    async function onSetEmoji(emoji: string) {
+      await updateObject(selectedItem.id, { emoji: emoji }, selectedItem.type);
+      setEmoji(!emoji);
+      onDeleteSuccess();
+    }
 
     return (
-      <ScrollView scrollEnabled={isScrolling}>
-        {filteredSpaces.length === 0 && filteredItems.length === 0 ? (
-          <Text style={styles.emptyText}>It is empty here...</Text>
-        ) : (
-          <View style={styles.contentContainer}>
-            {filteredSpaces.map((item: Space) => (
-              <SpaceItem
-                key={item.id}
-                item={item}
-                type='space'
-                onDeleteSuccess={onDeleteSuccess}
-                disableScroll={disableScroll}
-                enableScroll={enableScroll}
-              />
-            ))}
-            {filteredItems.map((item: Item) => (
-              <SpaceItem
-                key={item.id}
-                item={item}
-                type='item'
-                onDeleteSuccess={onDeleteSuccess}
-                disableScroll={disableScroll}
-                enableScroll={enableScroll}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+      <View style={{ flex: 1 }}>
+        <Modal transparent visible={emoji}>
+          <Pressable
+            style={styles.centeredContainer}
+            onPress={() => setEmoji(!emoji)}
+          >
+            <Pressable style={styles.emojiContainer}>
+              <View style={styles.emojiContent}>
+                <EmojiSelector
+                  onEmojiSelected={onSetEmoji}
+                  placeholder='Search...'
+                />
+              </View>
+            </Pressable>
+          </Pressable>
+        </Modal>
+        <ScrollView scrollEnabled={isScrolling}>
+          {filteredSpaces.length === 0 && filteredItems.length === 0 ? (
+            <Text style={styles.emptyText}>It is empty here...</Text>
+          ) : (
+            <View style={styles.contentContainer}>
+              {filteredSpaces.map((item: Space) => (
+                <SpaceItem
+                  key={item.id}
+                  item={item}
+                  type='space'
+                  onDeleteSuccess={onDeleteSuccess}
+                  disableScroll={disableScroll}
+                  enableScroll={enableScroll}
+                  context={context}
+                  setEmoji={setEmoji}
+                  setSelectedItem={setSelectedItem}
+                />
+              ))}
+              {filteredItems.map((item: Item) => (
+                <SpaceItem
+                  key={item.id}
+                  item={item}
+                  type='item'
+                  onDeleteSuccess={onDeleteSuccess}
+                  disableScroll={disableScroll}
+                  enableScroll={enableScroll}
+                  context={context}
+                  setEmoji={setEmoji}
+                  setSelectedItem={setSelectedItem}
+                />
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      </View>
     );
   }
 );
@@ -55,6 +103,23 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     gap: 3,
+  },
+  centeredContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiContainer: {
+    width: '80%',
+    height: '50%',
+    backgroundColor: COLORS['light-green'],
+    padding: 12,
+    borderRadius: 12,
+    ...SHADOWS.medium,
+  },
+  emojiContent: {
+    flex: 1,
+    marginBottom: 36,
   },
 });
 

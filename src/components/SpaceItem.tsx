@@ -1,5 +1,5 @@
-import { useNavigation } from '@react-navigation/native';
-import { memo, useState } from 'react';
+import { CompositeScreenProps, useNavigation } from '@react-navigation/native';
+import { memo, useEffect, useState } from 'react';
 import {
   Pressable,
   View,
@@ -18,9 +18,13 @@ import {
   deleteCasc,
   deleteOne,
   hasChildren,
+  restore,
+  restoreCasc,
   toHistory,
   toHistoryCasc,
 } from '../services/storageService';
+import { HistoryScreenProps } from '../screens/HistoryScreen';
+type Props = CompositeScreenProps<HistoryScreenProps, HomeScreenProps>;
 
 const SpaceItem = memo(
   ({
@@ -29,16 +33,32 @@ const SpaceItem = memo(
     onDeleteSuccess,
     disableScroll,
     enableScroll,
+    setEmoji,
+    setSelectedItem,
+    context,
   }: {
     item: Space | Item;
-    type: string;
+    type: 'item' | 'space';
     onDeleteSuccess: () => void;
     disableScroll: () => void;
     enableScroll: () => void;
+    setEmoji: (val: boolean) => void;
+    setSelectedItem: (val: { id: string; type: 'items' | 'spaces' }) => void;
+    context: 'home' | 'history';
   }) => {
-    const navigation = useNavigation<HomeScreenProps['navigation']>();
+    const navigation = useNavigation<Props['navigation']>();
     const [translateX] = useState(new Animated.Value(0));
     const screenWidth = Dimensions.get('window').width;
+    const [itemNames, setItemNames] = useState<string>('');
+
+    const loadItemNames = async () => {
+      const names = await formatItemNames(item.id);
+      setItemNames(names);
+    };
+
+    useEffect(() => {
+      loadItemNames();
+    }, [item.id]);
 
     const panResponder = PanResponder.create({
       onPanResponderGrant: () => {
@@ -57,13 +77,22 @@ const SpaceItem = memo(
         if (Math.abs(gestureState.dy) > Math.abs(gestureState.dx)) {
           return;
         }
-        if (gestureState.dx < 0) {
-          translateX.setValue(gestureState.dx);
-        }
+        translateX.setValue(gestureState.dx);
       },
       onPanResponderRelease: (_, gestureState) => {
         enableScroll();
-        if (Math.abs(gestureState.dx) > screenWidth * 0.6) {
+        if (context === 'history') {
+          if (gestureState.dx < -screenWidth * 0.6) {
+            handleDeletePermanent();
+          } else if (gestureState.dx > screenWidth * 0.6) {
+            handleSetActiveToUndefined();
+          } else {
+            Animated.spring(translateX, {
+              toValue: 0,
+              useNativeDriver: true,
+            }).start();
+          }
+        } else if (Math.abs(gestureState.dx) > screenWidth * 0.6) {
           handleDelete();
         } else {
           Animated.spring(translateX, {
@@ -73,6 +102,115 @@ const SpaceItem = memo(
         }
       },
     });
+
+    const getItemsInSpace = async (spaceId: string) => {
+      const spaces: Space[] = await getData('spaces');
+      const items: Item[] = await getData('items');
+
+      const spacesInSpace = spaces.filter(
+        (space) => space.parentId === spaceId
+      );
+      const itemsInSpace = items.filter((item) => item.parentId === spaceId);
+
+      const filteredSpaces =
+        context === 'history'
+          ? spacesInSpace.filter((space) => space.activeTo !== undefined)
+          : spacesInSpace.filter((space) => space.activeTo === undefined);
+
+      const filteredItems =
+        context === 'history'
+          ? itemsInSpace.filter((item) => item.activeTo !== undefined)
+          : itemsInSpace.filter((item) => item.activeTo === undefined);
+
+      return [...filteredSpaces, ...filteredItems];
+    };
+
+    const formatItemNames = async (spaceId: string) => {
+      const itemsAndSpaces = await getItemsInSpace(spaceId);
+      const names = itemsAndSpaces.map((item) => item.name);
+      const maxItemsToShow = 3;
+      const truncatedNames = names.slice(0, maxItemsToShow).join(', ');
+
+      if (names.length > maxItemsToShow) {
+        return `${truncatedNames}, ...`;
+      }
+
+      return truncatedNames;
+    };
+
+    const handleSetActiveToUndefined = async () => {
+      const key = type === 'item' ? 'items' : 'spaces';
+      if (key === 'spaces') {
+        const has = await hasChildren(item.id);
+        if (has) {
+          Alert.alert(
+            'Restore confirmation',
+            `Do you want to restore ${item.name} with all its items inside?`,
+            [
+              {
+                text: 'Cancel',
+                onPress: () =>
+                  Animated.spring(translateX, {
+                    toValue: 0,
+                    useNativeDriver: true,
+                  }).start(),
+              },
+              {
+                text: 'OK',
+                onPress: async () => {
+                  await restoreCasc(item.id);
+                  onDeleteSuccess();
+                },
+              },
+            ],
+            { cancelable: false }
+          );
+        } else {
+          await restore(item.id, 'spaces');
+          onDeleteSuccess();
+        }
+      } else {
+        await restore(item.id, 'items');
+      }
+      onDeleteSuccess();
+    };
+
+    const handleDeletePermanent = async () => {
+      const key = type === 'item' ? 'items' : 'spaces';
+      if (key === 'spaces') {
+        const has = await hasChildren(item.id);
+        if (has) {
+          Alert.alert(
+            'Delete confirmation',
+            `Do you want to delete ${item.name} for EVER with all its items inside?`,
+            [
+              {
+                text: 'Cancel',
+                onPress: () =>
+                  Animated.spring(translateX, {
+                    toValue: 0,
+                    useNativeDriver: true,
+                  }).start(),
+              },
+              {
+                text: 'OK',
+                onPress: async () => {
+                  await deleteCasc(item.id);
+                  onDeleteSuccess();
+                },
+              },
+            ],
+            { cancelable: false }
+          );
+        } else {
+          await deleteOne(item.id, 'spaces');
+          onDeleteSuccess();
+        }
+      } else {
+        await deleteOne(item.id, 'items');
+      }
+      onDeleteSuccess();
+    };
 
     const handleDelete = async () => {
       const key = type === 'item' ? 'items' : 'spaces';
@@ -111,6 +249,12 @@ const SpaceItem = memo(
       onDeleteSuccess();
     };
 
+    const onSelectEmoji = () => {
+      const key = type === 'item' ? 'items' : 'spaces';
+      setSelectedItem({ id: item.id, type: key });
+      setEmoji(true);
+    };
+
     return (
       <View>
         <Animated.View
@@ -132,10 +276,22 @@ const SpaceItem = memo(
                     navigation.navigate('ItemDetails', { parentId: item.id })
             }
           >
-            <View style={styles.spaceItemImage} />
+            <Pressable onPress={onSelectEmoji}>
+              <Text style={styles.emoji}>
+                {item.emoji ? item.emoji : '[   ]'}
+              </Text>
+            </Pressable>
             <View style={styles.spaceItemAllText}>
               <Text style={styles.spaceItemTitle}>{item.name}</Text>
-              <Text style={styles.spaceItemDesc}>{item.additionalInf}</Text>
+              {type === 'space' ? (
+                <Text style={styles.itemsInSpace}>
+                  {itemNames ? itemNames : 'empty'}
+                </Text>
+              ) : (
+                <Text style={styles.spaceItemDesc}>
+                  {(item as Item).additionalInf}
+                </Text>
+              )}
             </View>
             <Icon name='arrow-right' size={10} color='#49454F' />
           </Pressable>
@@ -200,6 +356,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'light-red',
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
+  },
+  itemsInSpace: {
+    fontSize: 12,
+    color: COLORS['dark-text-green'],
+    marginTop: 4,
+  },
+  emoji: {
+    fontSize: 32,
+    marginRight: 18,
   },
 });
 

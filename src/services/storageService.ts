@@ -138,13 +138,67 @@ export const toHistoryCasc = async (spaceId: string) => {
 
 export const toHistory = async (id: string, key: string) => {
   const data: (Item | Space)[] = await getData(key);
-  const itemIndex = data.findIndex((e) => e.id === id);
-  if (itemIndex === -1) {
-    throw new Error(`Item with id ${id} not found in key ${key}`);
-  }
-  data[itemIndex] = {
-    ...data[itemIndex],
-    activeTo: new Date(),
+  const updatedData = data.map((item: any) =>
+    item.id === id ? { ...item, activeTo: new Date() } : item
+  );
+  await setData(key, updatedData);
+};
+
+export const restore = async (id: string, type: 'items' | 'spaces') => {
+  const data = await getData(type);
+  const updatedData = data.map((item: any) =>
+    item.id === id ? { ...item, activeTo: undefined } : item
+  );
+  await setData(type, updatedData);
+  return true;
+};
+
+export const restoreCasc = async (id: string) => {
+  const spaces = await getData('spaces');
+  const items = await getData('items');
+
+  const getChildren = (parentId: string) => {
+    return spaces.filter((space: any) => space.parentId === parentId);
   };
-  await setData(key, data);
+
+  const restoreSpaceAndChildren = async (parentId: string) => {
+    await restore(parentId, 'spaces');
+
+    const children = getChildren(parentId);
+    for (const child of children) {
+      await restoreSpaceAndChildren(child.id);
+    }
+
+    const relatedItems = items.filter(
+      (item: any) => item.parentId === parentId
+    );
+    for (const item of relatedItems) {
+      await restore(item.id, 'items');
+    }
+  };
+
+  await restoreSpaceAndChildren(id);
+  return true;
+};
+
+export const updateObject = async (
+  id: string,
+  updatedObject: Partial<Item | Space>,
+  type: 'items' | 'spaces'
+) => {
+  try {
+    const data: (Item | Space)[] = await getData(type);
+    const index = data.findIndex((obj) => obj.id === id);
+
+    if (index !== -1) {
+      data[index] = { ...data[index], ...updatedObject };
+      await setData(type, data);
+
+      console.log(`Object with ID ${id} updated successfully.`);
+    } else {
+      console.warn(`Object with ID ${id} not found.`);
+    }
+  } catch (error) {
+    console.error('Failed to update object:', error);
+  }
 };

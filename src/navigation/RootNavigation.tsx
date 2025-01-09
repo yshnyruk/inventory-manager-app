@@ -7,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import HomeStackNavigation, {
   HomeStackParamList,
 } from './stack/HomeStackNavigation';
+import HistoryStackNavigation from './stack/HistoryStackNavigation';
 
 export type RootDrawerParamList = {
   HomeStack: undefined;
@@ -26,7 +27,7 @@ const RootNavigation = () => {
       >
         <RootDrawer.Screen name='HomeStack' component={HomeStackNavigation} />
         <RootDrawer.Screen name='Settings' component={SettingsScreen} />
-        <RootDrawer.Screen name='History' component={HistoryScreen} />
+        <RootDrawer.Screen name='History' component={HistoryStackNavigation} />
       </RootDrawer.Navigator>
     </NavigationContainer>
   );

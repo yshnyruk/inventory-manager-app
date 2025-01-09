@@ -1,9 +1,19 @@
-import React, { memo } from 'react';
-import { Modal, Pressable, View, Text, StyleSheet } from 'react-native';
+import React, { memo, useState } from 'react';
+import {
+  Modal,
+  Pressable,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Button,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { HomeStackParamList } from '../navigation/stack/HomeStackNavigation';
 import { COLORS } from '../styles';
+import ScannerModal from './ScannerModal';
+import ScannedItemModal from './ScannedItemModal';
 
 interface AddItemPopupProps {
   navigation: StackNavigationProp<HomeStackParamList, 'Home'>;
@@ -12,6 +22,7 @@ interface AddItemPopupProps {
   onEnterDetails: () => void;
   onScanBarcode: () => void;
   parentId: string;
+  setVisible: (val: boolean) => void;
 }
 const AddItemPopup = memo<AddItemPopupProps>(
   ({
@@ -21,11 +32,18 @@ const AddItemPopup = memo<AddItemPopupProps>(
     onScanBarcode,
     navigation,
     parentId,
+    setVisible,
   }) => {
+    const [scannerVisible, setScannerVisible] = useState(false);
+    const [scannedItemVisible, setScannedItemVisible] = useState(false);
+    const [scannedData, setScannedData] = useState('');
+
     const onNavigate = () => {
       onClose();
       navigation.navigate('AddItem', { parentId: parentId });
     };
+
+    const handleBarcodeScanned = (data: string) => [console.log(data)];
 
     return (
       <Modal transparent visible={visible}>
@@ -37,14 +55,27 @@ const AddItemPopup = memo<AddItemPopupProps>(
             </Pressable>
             <View style={styles.divider} />
             <Pressable
-              style={[styles.itemPopupButton, { opacity: 0.5 }]}
-              disabled={true}
+              style={styles.itemPopupButton}
+              onPress={() => setScannerVisible(!scannerVisible)}
             >
               <Text style={styles.itemPopupText}>Scan a QR/Barcode</Text>
               <Icon name='camera' size={24} color='#49454F' />
             </Pressable>
           </View>
         </Pressable>
+
+        <ScannerModal
+          scannerVisible={scannerVisible}
+          setScannerVisible={setScannerVisible}
+          showData={setScannedItemVisible}
+          setScannedData={setScannedData}
+        />
+
+        <ScannedItemModal
+          data={scannedData}
+          visible={scannedItemVisible}
+          setVisible={setScannedItemVisible}
+        />
       </Modal>
     );
   }

@@ -3,30 +3,40 @@ import { View, TextInput, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { COLORS, SHADOWS } from '../styles';
 
-const Search = memo(({ search, setSearch, navigation }: any) => (
-  <View style={styles.headerContainer}>
-    <Icon
-      style={styles.icon}
-      onPress={() => navigation.openDrawer()}
-      name='bars'
-      size={24}
-      color='#49454F'
-    />
-    <TextInput
-      placeholder='Search...'
-      style={styles.input}
-      value={search}
-      onChangeText={setSearch}
-    />
-    <Icon
-      style={styles.icon}
-      onPress={() => {}}
-      name='search'
-      size={24}
-      color='#49454F'
-    />
-  </View>
-));
+const Search = memo(({ search, setSearch, navigation, leftIcon }: any) => {
+  const leftIconOnPress = () => {
+    if (leftIcon === 'bars') {
+      navigation.openDrawer();
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  return (
+    <View style={styles.headerContainer}>
+      <Icon
+        style={styles.icon}
+        onPress={leftIconOnPress}
+        name={leftIcon}
+        size={24}
+        color='#49454F'
+      />
+      <TextInput
+        placeholder='Search...'
+        style={styles.input}
+        value={search}
+        onChangeText={setSearch}
+      />
+      <Icon
+        style={styles.icon}
+        onPress={() => {}}
+        name='search'
+        size={24}
+        color='#49454F'
+      />
+    </View>
+  );
+});
 
 const styles = StyleSheet.create({
   headerContainer: {
