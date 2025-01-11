@@ -1,6 +1,11 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import {
+  CardStyleInterpolators,
+  createStackNavigator,
+  TransitionPresets,
+} from '@react-navigation/stack';
 import HistoryScreen from '../../screens/HistoryScreen';
+import ItemDetailsScreen from '../../screens/ItemDetailsScreen';
 
 export type HistoryStackParamList = {
   HistoryMain: { parentId?: string };
@@ -15,13 +20,16 @@ export default function HistoryStackNavigation() {
       <HistoryStack.Screen
         name='HistoryMain'
         component={HistoryScreen}
+        options={{
+          headerShown: false,
+          ...TransitionPresets.ModalFadeTransition,
+        }}
+      />
+      <HistoryStack.Screen
+        name='HistoryItem'
+        component={ItemDetailsScreen}
         options={{ headerShown: false }}
       />
-      {/* <HistoryStack.Screen
-        name='HistoryItem'
-        component={AddItemScreen}
-        options={{ headerShown: false }}
-      /> */}
     </HistoryStack.Navigator>
   );
 }

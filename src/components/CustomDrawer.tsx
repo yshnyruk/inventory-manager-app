@@ -2,11 +2,19 @@ import {
   DrawerContentComponentProps,
   DrawerContentScrollView,
 } from '@react-navigation/drawer';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Linking } from 'react-native';
 import { COLORS } from '../styles';
 import DrawerButton from './DrawerButton';
+import { useAuth } from '../services/authService';
+import * as AuthSession from 'expo-auth-session';
 
 const CustomDrawerContent = (props: DrawerContentComponentProps) => {
+  const { user, request, promptAsync } = useAuth();
+
+  const handleSingIn = async () => {
+    promptAsync();
+  };
+
   return (
     <DrawerContentScrollView contentContainerStyle={styles.drawerContainer}>
       <View style={styles.userGreeting}>
@@ -20,9 +28,17 @@ const CustomDrawerContent = (props: DrawerContentComponentProps) => {
       <DrawerButton
         label='Settings'
         iconName='gear'
-        onPress={() => props.navigation.navigate('Settings')}
+        onPress={() => props.navigation.navigate('SettingsStack')}
       />
-      <DrawerButton label='Log In' iconName='user' onPress={() => {}} />
+      {user ? (
+        <Text>Welcome, {user.name}</Text>
+      ) : (
+        <DrawerButton
+          label='Sign in with Google'
+          iconName='google'
+          onPress={handleSingIn}
+        />
+      )}
     </DrawerContentScrollView>
   );
 };

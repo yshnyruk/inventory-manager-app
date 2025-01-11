@@ -1,4 +1,8 @@
-import { CompositeScreenProps, useNavigation } from '@react-navigation/native';
+import {
+  CompositeScreenProps,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { memo, useEffect, useState } from 'react';
 import {
   Pressable,
@@ -35,7 +39,7 @@ const SpaceItem = memo(
     enableScroll,
     setEmoji,
     setSelectedItem,
-    context,
+    canChangeSmiles,
   }: {
     item: Space | Item;
     type: 'item' | 'space';
@@ -44,12 +48,14 @@ const SpaceItem = memo(
     enableScroll: () => void;
     setEmoji: (val: boolean) => void;
     setSelectedItem: (val: { id: string; type: 'items' | 'spaces' }) => void;
-    context: 'home' | 'history';
+    canChangeSmiles: boolean;
   }) => {
     const navigation = useNavigation<Props['navigation']>();
+    const route = useRoute<Props['route']>();
     const [translateX] = useState(new Animated.Value(0));
     const screenWidth = Dimensions.get('window').width;
     const [itemNames, setItemNames] = useState<string>('');
+    const [screenName, setScreenName] = useState('');
 
     const loadItemNames = async () => {
       const names = await formatItemNames(item.id);
@@ -81,7 +87,7 @@ const SpaceItem = memo(
       },
       onPanResponderRelease: (_, gestureState) => {
         enableScroll();
-        if (context === 'history') {
+        if (routeName === 'HistoryMain') {
           if (gestureState.dx < -screenWidth * 0.6) {
             handleDeletePermanent();
           } else if (gestureState.dx > screenWidth * 0.6) {
@@ -113,12 +119,12 @@ const SpaceItem = memo(
       const itemsInSpace = items.filter((item) => item.parentId === spaceId);
 
       const filteredSpaces =
-        context === 'history'
+        routeName === 'HistoryMain'
           ? spacesInSpace.filter((space) => space.activeTo !== undefined)
           : spacesInSpace.filter((space) => space.activeTo === undefined);
 
       const filteredItems =
-        context === 'history'
+        routeName === 'HistoryMain'
           ? itemsInSpace.filter((item) => item.activeTo !== undefined)
           : itemsInSpace.filter((item) => item.activeTo === undefined);
 
@@ -250,11 +256,14 @@ const SpaceItem = memo(
     };
 
     const onSelectEmoji = () => {
-      const key = type === 'item' ? 'items' : 'spaces';
-      setSelectedItem({ id: item.id, type: key });
-      setEmoji(true);
+      if (canChangeSmiles) {
+        const key = type === 'item' ? 'items' : 'spaces';
+        setSelectedItem({ id: item.id, type: key });
+        setEmoji(true);
+      }
     };
 
+    const routeName: string = route.name;
     return (
       <View>
         <Animated.View
@@ -269,12 +278,17 @@ const SpaceItem = memo(
               type === 'space' && { backgroundColor: COLORS['dark-green'] },
               type === 'item' && { backgroundColor: '#f2f2f2' },
             ]}
-            onPress={
-              type === 'space'
-                ? () => navigation.push('Home', { parentId: item.id })
-                : () =>
-                    navigation.navigate('ItemDetails', { parentId: item.id })
-            }
+            onPress={() => {
+              if (type === 'space') {
+                navigation.push(route.name, { parentId: item.id });
+              } else {
+                if (routeName === 'Home') {
+                  navigation.navigate('ItemDetails', { parentId: item.id });
+                } else {
+                  navigation.navigate('HistoryItem', { parentId: item.id });
+                }
+              }
+            }}
           >
             <Pressable onPress={onSelectEmoji}>
               <Text style={styles.emoji}>

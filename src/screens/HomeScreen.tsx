@@ -129,6 +129,7 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
         filteredItems={filteredItems}
         onDeleteSuccess={handleDeleteSuccess}
         context='home'
+        canChangeSmiles={true}
       />
       <BottomButtons
         onAddSpace={() => setModalVisible(true)}

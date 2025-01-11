@@ -12,17 +12,19 @@ import { COLORS } from '../styles';
 const AddSpacePopup = memo(({ visible, onClose, onSave }: any) => {
   const [spaceName, setSpaceName] = useState('');
 
-  useEffect(() => {
-    const generateRandomSpaceName = () => {
-      const randomIndex = Math.floor(Math.random() * 100) + 1;
-      setSpaceName(`Space ${randomIndex + 1}`);
-    };
-    generateRandomSpaceName();
-  }, [visible]);
+  const handlerClose = () => {
+    setSpaceName('');
+    onClose();
+  };
+
+  const handlerCreate = () => {
+    setSpaceName('');
+    onSave(spaceName);
+  };
 
   return (
     <Modal transparent visible={visible}>
-      <Pressable style={styles.modalContainer} onPress={onClose}>
+      <Pressable style={styles.modalContainer} onPress={handlerClose}>
         <View style={styles.modalContent}>
           <Text style={styles.title}>Name Your Space</Text>
           <TextInput
@@ -32,12 +34,15 @@ const AddSpacePopup = memo(({ visible, onClose, onSave }: any) => {
             onChangeText={setSpaceName}
           />
           <View style={styles.buttonRow}>
-            <Pressable style={styles.buttonTextContainer} onPress={onClose}>
+            <Pressable
+              style={styles.buttonTextContainer}
+              onPress={handlerClose}
+            >
               <Text style={{ color: 'black' }}>Close</Text>
             </Pressable>
             <Pressable
               style={styles.buttonTextContainer}
-              onPress={() => onSave(spaceName)}
+              onPress={handlerCreate}
               disabled={spaceName.trim().length === 0}
             >
               <Text style={{ color: 'black' }}>Create</Text>

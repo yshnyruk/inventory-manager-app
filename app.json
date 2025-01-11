@@ -2,6 +2,7 @@
   "expo": {
     "name": "inventory-manager-app",
     "slug": "inventory-manager-app",
+    "owner": "floatice",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,20 +14,31 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": "1.0.0",
+      "bundleIdentifier": "com.anonymous.inventorymanagerapp"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.inventorymanagerapp"
+      "package": "com.anonymous.inventorymanagerapp",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-sqlite"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a2d7424e-6e86-4323-bcde-6d82b04af7c6"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a2d7424e-6e86-4323-bcde-6d82b04af7c6"
+    }
   }
 }

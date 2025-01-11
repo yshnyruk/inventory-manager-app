@@ -1,5 +1,8 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import {
+  createStackNavigator,
+  TransitionPresets,
+} from '@react-navigation/stack';
 import AddItemScreen from '../../screens/AddItemScreen';
 import HomeScreen, { Item } from '../../screens/HomeScreen';
 import ItemDetailsScreen from '../../screens/ItemDetailsScreen';
@@ -18,7 +21,10 @@ export default function HomeStackNavigation() {
       <HomeStack.Screen
         name='Home'
         component={HomeScreen}
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+          ...TransitionPresets.ModalFadeTransition,
+        }}
       />
       <HomeStack.Screen
         name='AddItem'

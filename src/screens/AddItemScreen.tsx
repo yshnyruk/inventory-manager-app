@@ -34,19 +34,14 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
     () =>
       existingItem || {
         id: new Date().toISOString(),
-        name: `Item ${Math.floor(Math.random() * 1000)}`, // Random name
-        category: `Category ${Math.floor(Math.random() * 1000)}`, // Random category
-        number: Math.floor(Math.random() * 100) + 1, // Random number between 1 and 100
-        expiryDate: new Date(
-          new Date().setFullYear(
-            new Date().getFullYear() + Math.floor(Math.random() * 5)
-          )
-        ),
-        weightVolume: `${Math.floor(Math.random() * 100)} kg`, // Random weight/volume
-        additionalInf: `Additional info ${Math.floor(Math.random() * 1000)}`, // Random additional information
+        name: '',
+        number: 1,
+        expiryDate: '',
+        weightVolume: '',
+        additionalInf: '',
         activeFrom: new Date(),
         parentId: route.params?.parentId || 'Root',
-        photoUri: undefined,
+        photoUri: '',
       }
   );
 

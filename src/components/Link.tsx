@@ -1,4 +1,8 @@
-import { CompositeScreenProps, useNavigation } from '@react-navigation/native';
+import {
+  CompositeScreenProps,
+  StackActions,
+  useNavigation,
+} from '@react-navigation/native';
 import React, { memo, useState, useEffect } from 'react';
 import { View, Pressable, Text, StyleSheet } from 'react-native';
 import { Space } from '../screens/HomeScreen';
@@ -36,11 +40,10 @@ const Link = memo(
     // Function to handle navigation when a path item is clicked
     const handlePathClick = (pathId: string) => {
       const screen = navigationStr === 'Home' ? 'Home' : 'HistoryMain';
-      if (pathId === 'Root') {
-        navigation.navigate(screen, { parentId: 'Root' });
-      } else {
-        navigation.navigate(screen, { parentId: pathId });
-      }
+      const params = { parentId: pathId === 'Root' ? 'Root' : pathId };
+
+      const pushAction = StackActions.push(screen, params);
+      navigation.dispatch(pushAction);
     };
 
     return (

@@ -15,7 +15,7 @@ const Header = ({ label, navigation }: Props) => {
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
-        <Icon name='arrow-left' size={24} color={COLORS['dark-text-green']} />
+        <Icon name='chevron-left' size={24} color={COLORS['dark-text-green']} />
       </TouchableOpacity>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>{label}</Text>

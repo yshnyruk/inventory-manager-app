@@ -11,7 +11,6 @@ import { Item, Space } from '../screens/HomeScreen';
 import SpaceItem from './SpaceItem';
 import { COLORS, SHADOWS } from '../styles';
 import EmojiSelector from 'react-native-emoji-selector';
-import { getData } from '../services';
 import { updateObject } from '../services/storageService';
 
 type SelectedItem = {
@@ -20,7 +19,12 @@ type SelectedItem = {
 };
 
 const Content = memo(
-  ({ filteredSpaces, filteredItems, onDeleteSuccess, context }: any) => {
+  ({
+    filteredSpaces,
+    filteredItems,
+    onDeleteSuccess,
+    canChangeSmiles,
+  }: any) => {
     const [isScrolling, setIsScrolling] = useState(true);
     const [emoji, setEmoji] = useState(false);
     const disableScroll = () => setIsScrolling(false);
@@ -66,9 +70,9 @@ const Content = memo(
                   onDeleteSuccess={onDeleteSuccess}
                   disableScroll={disableScroll}
                   enableScroll={enableScroll}
-                  context={context}
                   setEmoji={setEmoji}
                   setSelectedItem={setSelectedItem}
+                  canChangeSmiles={canChangeSmiles}
                 />
               ))}
               {filteredItems.map((item: Item) => (
@@ -79,9 +83,9 @@ const Content = memo(
                   onDeleteSuccess={onDeleteSuccess}
                   disableScroll={disableScroll}
                   enableScroll={enableScroll}
-                  context={context}
                   setEmoji={setEmoji}
                   setSelectedItem={setSelectedItem}
+                  canChangeSmiles={canChangeSmiles}
                 />
               ))}
             </View>

@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { RootDrawerParamList } from '../navigation/RootNavigation';
-import { DrawerScreenProps } from '@react-navigation/drawer';
 import Header from '../components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SettingsButton from '../components/SettingsButton';
+import { StackScreenProps } from '@react-navigation/stack';
+import { SettingsStackParamList } from '../navigation/stack/SettingsStackNavigation';
 
-type Props = DrawerScreenProps<RootDrawerParamList, 'Settings'>;
+type Props = StackScreenProps<SettingsStackParamList, 'Settings'>;
 
 const SettingsScreen = ({ navigation }: Props) => {
   const handleReset = async () => {
@@ -16,9 +17,13 @@ const SettingsScreen = ({ navigation }: Props) => {
   return (
     <View style={styles.container}>
       <Header navigation={navigation} label='Settings' />
-
       {/* Main Content */}
       <View style={styles.content}>
+        <SettingsButton
+          title='Reminders'
+          icon='bell'
+          onPress={() => navigation.navigate('Reminders')}
+        />
         <TouchableOpacity onPress={handleReset} style={styles.resetButton}>
           <Text style={styles.resetButtonText}>Reset Data</Text>
         </TouchableOpacity>
@@ -37,6 +42,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    gap: 12,
   },
   resetButton: {
     width: '100%',

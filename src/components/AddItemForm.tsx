@@ -26,12 +26,6 @@ export const AddItemForm = ({ formData, setFormData, onSelectPhoto }: any) => {
       />
       <TextInput
         style={styles.input}
-        placeholder='Category'
-        value={formData.category}
-        onChangeText={(text) => setFormData({ ...formData, category: text })}
-      />
-      <TextInput
-        style={styles.input}
         placeholder='Number'
         keyboardType='numeric'
         value={formData.number !== null ? formData.number.toString() : ''}

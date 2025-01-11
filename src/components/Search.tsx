@@ -8,7 +8,7 @@ const Search = memo(({ search, setSearch, navigation, leftIcon }: any) => {
     if (leftIcon === 'bars') {
       navigation.openDrawer();
     } else {
-      navigation.goBack();
+      navigation.navigate('HomeStack', { screen: 'Home' });
     }
   };
 

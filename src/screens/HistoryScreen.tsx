@@ -94,7 +94,7 @@ const HistoryScreen = ({ navigation, route }: HistoryScreenProps) => {
         filteredSpaces={filteredSpaces}
         filteredItems={filteredItems}
         onDeleteSuccess={loadData}
-        context='history'
+        canChangeSmiles={false}
       />
     </View>
   );

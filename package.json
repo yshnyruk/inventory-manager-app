@@ -18,6 +18,8 @@
     "expo-camera": "^16.0.10",
     "expo-file-system": "~18.0.5",
     "expo-image-picker": "~16.0.3",
+    "expo-notifications": "~0.29.11",
+    "expo-permissions": "^14.4.0",
     "expo-sqlite": "~15.0.3",
     "expo-status-bar": "~2.0.0",
     "react": "18.3.1",
@@ -31,6 +33,7 @@
     "react-native-get-random-values": "^1.11.0",
     "react-native-image-picker": "^7.2.3",
     "react-native-permissions": "^2.2.2",
+    "react-native-push-notification": "^8.1.1",
     "react-native-qrcode-scanner": "^1.5.5",
     "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "^4.14.0",
@@ -38,7 +41,11 @@
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-vector-icons": "^10.2.0",
     "react-native-vision-camera": "^4.6.3",
-    "react-native-web": "~0.19.13"
+    "react-native-web": "~0.19.13",
+    "expo-auth-session": "~6.0.2",
+    "undefined": "expo-auth-session/providers/google",
+    "expo-web-browser": "~14.0.2",
+    "expo-updates": "~0.26.12"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

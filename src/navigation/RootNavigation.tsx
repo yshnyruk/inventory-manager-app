@@ -4,14 +4,13 @@ import SettingsScreen from '../screens/SettingsScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import CustomDrawerContent from '../components/CustomDrawer';
 import { NavigationContainer } from '@react-navigation/native';
-import HomeStackNavigation, {
-  HomeStackParamList,
-} from './stack/HomeStackNavigation';
+import HomeStackNavigation from './stack/HomeStackNavigation';
 import HistoryStackNavigation from './stack/HistoryStackNavigation';
+import SettingsStackNavigation from './stack/SettingsStackNavigation';
 
 export type RootDrawerParamList = {
   HomeStack: undefined;
-  Settings: undefined;
+  SettingsStack: undefined;
   History: undefined;
 };
 
@@ -26,7 +25,10 @@ const RootNavigation = () => {
         drawerContent={(props) => <CustomDrawerContent {...props} />}
       >
         <RootDrawer.Screen name='HomeStack' component={HomeStackNavigation} />
-        <RootDrawer.Screen name='Settings' component={SettingsScreen} />
+        <RootDrawer.Screen
+          name='SettingsStack'
+          component={SettingsStackNavigation}
+        />
         <RootDrawer.Screen name='History' component={HistoryStackNavigation} />
       </RootDrawer.Navigator>
     </NavigationContainer>
