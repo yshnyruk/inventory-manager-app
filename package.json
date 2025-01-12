@@ -11,10 +11,13 @@
   "dependencies": {
     "@expo/metro-runtime": "~4.0.0",
     "@react-native-async-storage/async-storage": "^2.1.0",
+    "@react-native-firebase/app": "^21.6.2",
+    "@react-native-firebase/auth": "^21.6.2",
     "@react-navigation/drawer": "^7.0.7",
     "@react-navigation/native": "^7.0.4",
     "@react-navigation/stack": "^7.0.7",
     "expo": "~52.0.11",
+    "expo-auth-session": "~6.0.2",
     "expo-camera": "^16.0.10",
     "expo-file-system": "~18.0.5",
     "expo-image-picker": "~16.0.3",
@@ -22,6 +25,9 @@
     "expo-permissions": "^14.4.0",
     "expo-sqlite": "~15.0.3",
     "expo-status-bar": "~2.0.0",
+    "expo-updates": "~0.26.12",
+    "expo-web-browser": "~14.0.2",
+    "firebase": "^9.17.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.3",
@@ -42,13 +48,11 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-vision-camera": "^4.6.3",
     "react-native-web": "~0.19.13",
-    "expo-auth-session": "~6.0.2",
-    "undefined": "expo-auth-session/providers/google",
-    "expo-web-browser": "~14.0.2",
-    "expo-updates": "~0.26.12"
+    "undefined": "expo-auth-session/providers/google"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/firebase": "^2.4.32",
     "@types/react": "~18.3.12",
     "@types/react-native-vector-icons": "^6.4.18",
     "typescript": "^5.3.3"

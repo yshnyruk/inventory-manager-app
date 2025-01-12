@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SettingsButton from '../components/SettingsButton';
 import { StackScreenProps } from '@react-navigation/stack';
 import { SettingsStackParamList } from '../navigation/stack/SettingsStackNavigation';
+import { uploadDataToFirebase } from '../services/syncFirebaseService';
 
 type Props = StackScreenProps<SettingsStackParamList, 'Settings'>;
 
@@ -12,6 +13,10 @@ const SettingsScreen = ({ navigation }: Props) => {
   const handleReset = async () => {
     await AsyncStorage.clear();
     console.log('All data cleared!');
+  };
+
+  const handleSync = async () => {
+    await uploadDataToFirebase();
   };
 
   return (
@@ -24,6 +29,13 @@ const SettingsScreen = ({ navigation }: Props) => {
           icon='bell'
           onPress={() => navigation.navigate('Reminders')}
         />
+
+        {/* Sync Data to Firebase button */}
+        <TouchableOpacity onPress={handleSync} style={styles.resetButton}>
+          <Text style={styles.resetButtonText}>Sync to Account</Text>
+        </TouchableOpacity>
+
+        {/* Reset Data button */}
         <TouchableOpacity onPress={handleReset} style={styles.resetButton}>
           <Text style={styles.resetButtonText}>Reset Data</Text>
         </TouchableOpacity>

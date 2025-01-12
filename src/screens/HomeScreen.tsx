@@ -12,6 +12,7 @@ import Content from '../components/Content';
 import { useFocusEffect } from '@react-navigation/native';
 import { getData, setData } from '../services';
 import { COLORS } from '../styles';
+import { useAuth } from '../contexts/AuthContext';
 
 // Define the type for HomeScreenProps
 export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
@@ -52,6 +53,7 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
   const [addItemVisible, setAddItemVisible] = useState(false);
   // Determine the current space ID based on route parameters
   const currentSpaceId = route.params?.parentId || 'Root';
+  const { user, syncing } = useAuth();
 
   // Function to load data from AsyncStorage
   const loadData = async () => {

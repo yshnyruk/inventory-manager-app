@@ -5,20 +5,18 @@ import {
 import { View, Text, StyleSheet, Linking } from 'react-native';
 import { COLORS } from '../styles';
 import DrawerButton from './DrawerButton';
-import { useAuth } from '../services/authService';
-import * as AuthSession from 'expo-auth-session';
+import { useAuth } from '../contexts/AuthContext';
+import { logoutUser } from '../services/authService';
 
 const CustomDrawerContent = (props: DrawerContentComponentProps) => {
-  const { user, request, promptAsync } = useAuth();
-
-  const handleSingIn = async () => {
-    promptAsync();
-  };
+  const { user } = useAuth();
 
   return (
     <DrawerContentScrollView contentContainerStyle={styles.drawerContainer}>
       <View style={styles.userGreeting}>
-        <Text style={styles.greetingText}>Hello, User :)</Text>
+        <Text style={styles.greetingText}>
+          Hello, {user ? user.displayName : 'User'} :)
+        </Text>
       </View>
       <DrawerButton
         label='History'
@@ -31,12 +29,12 @@ const CustomDrawerContent = (props: DrawerContentComponentProps) => {
         onPress={() => props.navigation.navigate('SettingsStack')}
       />
       {user ? (
-        <Text>Welcome, {user.name}</Text>
+        <DrawerButton label='Log Out' onPress={() => logoutUser()} />
       ) : (
         <DrawerButton
-          label='Sign in with Google'
-          iconName='google'
-          onPress={handleSingIn}
+          label='Log In'
+          iconName='user'
+          onPress={() => props.navigation.navigate('LoginStack')}
         />
       )}
     </DrawerContentScrollView>

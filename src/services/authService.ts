@@ -1,45 +1,115 @@
-import { useState, useEffect } from 'react';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import { ResponseType } from 'expo-auth-session';
-import * as AuthSession from 'expo-auth-session';
+import { auth } from './firebase';
+import {
+  updateProfile,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from 'firebase/auth';
 
-WebBrowser.maybeCompleteAuthSession();
+export const registerUser = async (
+  nickname: string,
+  email: string,
+  password: string,
+  checkPassword: string
+) => {
+  if (password !== checkPassword) {
+    alert('Passwords do not match. Please try again.');
+    return null;
+  }
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  picture: string;
-};
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    responseType: ResponseType.Token,
-    clientId:
-      '736721513256-md6k89b1dd0l19mp2dfuelhssbmdtar1.apps.googleusercontent.com',
-    iosClientId:
-      '736721513256-jae9c9rpof74e0008rs8b16fhkcqcmf7.apps.googleusercontent.com',
-    androidClientId:
-      '736721513256-qmbrlgnuhdms8veod2bc5tk561b6o0ae.apps.googleusercontent.com',
-  });
-
-  const fetchUserInfo = async (token: string) => {
-    const res = await fetch('https://www.googleapis.com/userinfo/v2/me', {
-      headers: { Authorization: `Bearer ${token}` },
+    await updateProfile(userCredential.user, {
+      displayName: nickname,
     });
-    const userInfo = await res.json();
-    setUser(userInfo);
-    console.log(userInfo);
-  };
 
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { access_token } = response.params;
-      fetchUserInfo(access_token);
+    alert('User registered successfully!');
+    console.log('User registered:', userCredential.user);
+    return userCredential.user;
+  } catch (error) {
+    // Handle errors
+    switch ((error as any).code) {
+      case 'auth/email-already-in-use':
+        alert('The email address is already in use by another account.');
+        break;
+      case 'auth/invalid-email':
+        alert('The email address is not valid. Please enter a valid email.');
+        break;
+      case 'auth/weak-password':
+        alert(
+          'The password is too weak. Please choose a stronger password (at least 6 characters).'
+        );
+        break;
+      case 'auth/operation-not-allowed':
+        alert(
+          'Email/password accounts are not enabled. Please contact support.'
+        );
+        break;
+      case 'auth/invalid-credential':
+        alert('Invalid credential. Please try again.');
+        break;
+      default:
+        alert(`An unknown error occurred: ${(error as any).message}`);
     }
-  }, [response]);
-
-  return { user, request, promptAsync };
+    console.log(
+      'Error registering user:',
+      (error as any).code,
+      (error as any).message
+    );
+    return null;
+  }
 };
+
+export const loginUser = async (email: string, password: string) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    const user = userCredential.user;
+    alert(`Welcome back, ${user.displayName}!`);
+    console.log('User signed in:', user);
+    return userCredential.user;
+  } catch (error) {
+    // Handle errors
+    if (error instanceof Error) {
+      switch ((error as any).code) {
+        case 'auth/user-not-found':
+          alert('User not found. Please check your email or sign up.');
+          break;
+        case 'auth/wrong-password':
+          alert('Incorrect password. Please try again.');
+          break;
+        case 'auth/invalid-email':
+          alert('Invalid email format. Please enter a valid email.');
+          break;
+        case 'auth/too-many-requests':
+          alert('Too many login attempts. Please try again later.');
+          break;
+        case 'auth/invalid-credential':
+          alert('Invalid credential. Please try again.');
+          break;
+        default:
+          alert(`An unknown error occurred: ${error.message}`);
+      }
+      console.log('Login error:', error.message);
+    } else {
+      alert('An unexpected error occurred. Please try again.');
+      console.log(
+        'Unknown error:',
+        (error as any).code,
+        (error as any).message
+      );
+      return null;
+    }
+  }
+};
+
+export const logoutUser = () => signOut(auth);

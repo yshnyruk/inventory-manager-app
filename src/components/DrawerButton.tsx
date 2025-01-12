@@ -6,16 +6,16 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 type Props = {
   onPress: () => void;
   label: string;
-  iconName: string;
+  iconName?: string;
 };
 
 const DrawerButton = ({ onPress, label, iconName }: Props) => {
   return (
     <Pressable onPress={onPress}>
       <View style={styles.container}>
-        <Icon name={iconName} size={24} color='#1C1B1F' />
+        {iconName && <Icon name={iconName} size={24} color='#1C1B1F' />}
         <Text style={styles.text}>{label}</Text>
-        <Icon name='arrow-right' size={12} color='#1C1B1F' />
+        <Icon name='chevron-right' size={12} color='#1C1B1F' />
       </View>
       <View style={styles.divider} />
     </Pressable>
