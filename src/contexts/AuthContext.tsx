@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { auth } from '../services/firebase';
+import { auth } from '../services/firebaseService';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { syncData } from '../services/syncFirebaseService';
 

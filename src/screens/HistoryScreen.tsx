@@ -6,13 +6,14 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Header from '../components/Header';
 import Content from '../components/Content';
 import { Item, Space } from './HomeScreen';
-import { getData } from '../services';
 import { useFocusEffect } from '@react-navigation/native';
 import Search from '../components/Search';
 import Link from '../components/Link';
 import { HistoryStackParamList } from '../navigation/stack/HistoryStackNavigation';
 import { StackScreenProps } from '@react-navigation/stack';
 import { COLORS } from '../styles';
+import { getFromStorage } from '../services/storageService';
+import { filterItems, filterSpaces } from '../utils/filters';
 
 export type HistoryScreenProps = StackScreenProps<
   HistoryStackParamList,
@@ -26,8 +27,8 @@ const HistoryScreen = ({ navigation, route }: HistoryScreenProps) => {
   const currentSpaceId = route.params?.parentId || 'Root';
 
   const loadData = async () => {
-    const spaces = await getData('spaces');
-    const items = await getData('items');
+    const spaces = await getFromStorage('spaces');
+    const items = await getFromStorage('items');
     setSpaces(spaces);
     setItems(items);
   };
@@ -39,41 +40,8 @@ const HistoryScreen = ({ navigation, route }: HistoryScreenProps) => {
     }, [])
   );
 
-  const hasActiveParent = (id: string, spaces: Array<any>): boolean => {
-    const parent = spaces.find((space) => space.id === id);
-
-    if (!parent) return false;
-    if (parent.activeTo === undefined) return true;
-
-    return hasActiveParent(parent.parentId, spaces);
-  };
-
-  const getFilteredSpaces = () => {
-    const lowerSearch = search.toLowerCase();
-
-    const filteredSpaces = spaces.filter(
-      (e) =>
-        e.activeTo !== null &&
-        e.name.toLowerCase().includes(lowerSearch) &&
-        (e.parentId === currentSpaceId || hasActiveParent(e.parentId, spaces)) // Додано перевірку на батька
-    );
-    return filteredSpaces;
-  };
-
-  const getFilteredItems = () => {
-    const lowerSearch = search.toLowerCase();
-
-    const filteredItems = items.filter(
-      (e) =>
-        e.activeTo !== null &&
-        e.name.toLowerCase().includes(lowerSearch) &&
-        (e.parentId === currentSpaceId || hasActiveParent(e.parentId, spaces)) // Додано перевірку на батька
-    );
-    return filteredItems;
-  };
-
-  const filteredSpaces = getFilteredSpaces();
-  const filteredItems = getFilteredItems();
+  const filteredSpaces = filterSpaces(spaces, search, currentSpaceId);
+  const filteredItems = filterItems(items, search, currentSpaceId, spaces);
 
   return (
     <View style={styles.container}>
@@ -106,43 +74,6 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 48,
     backgroundColor: COLORS.bg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
-    elevation: 3,
-  },
-  backButton: {
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  titleContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  contentText: {
-    fontSize: 18,
-    color: '#333',
-    textAlign: 'center',
   },
 });
 

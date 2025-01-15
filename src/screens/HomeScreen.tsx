@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Button } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { HomeStackParamList } from '../navigation/stack/HomeStackNavigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,12 +10,11 @@ import Link from '../components/Link';
 import Search from '../components/Search';
 import Content from '../components/Content';
 import { useFocusEffect } from '@react-navigation/native';
-import { getData, setData } from '../services';
 import { COLORS } from '../styles';
 import { AuthContext } from '../contexts/AuthContext';
 import { push, ref, set } from 'firebase/database';
-import { db } from '../services/firebase';
-
+import { db } from '../services/firebaseService';
+import { getFromStorage, saveToStorage } from '../services/storageService';
 // Define the type for HomeScreenProps
 export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
 
@@ -59,8 +58,8 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
 
   // Function to load data from AsyncStorage
   const loadData = async () => {
-    const spaces = await getData('spaces');
-    const items = await getData('items');
+    const spaces = await getFromStorage('spaces');
+    const items = await getFromStorage('items');
     setSpaces(spaces);
     setItems(items);
   };
@@ -69,7 +68,6 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
   useFocusEffect(
     useCallback(() => {
       loadData();
-      console.log('Refershing data...');
     }, [dataLoaded])
   );
 
@@ -84,7 +82,7 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
 
     setSpaces((prevSpaces) => {
       const updatedSpaces = [...prevSpaces, newSpace];
-      setData('spaces', updatedSpaces);
+      saveToStorage('spaces', updatedSpaces);
       if (user) {
         const spacesRef = ref(db, `users/${user.uid}/spaces`);
         set(spacesRef, updatedSpaces);
@@ -100,14 +98,14 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
     const lowerSearch = search.toLowerCase();
     const currentParentId = route.params?.parentId || 'Root';
 
-    const filteredSpaces = spaces.filter(
+    const filteredSpaces = (spaces || []).filter(
       (item) =>
         item.name.toLowerCase().includes(lowerSearch) &&
         item.parentId === currentParentId &&
         item.activeTo === null
     );
 
-    const filteredItems = items.filter(
+    const filteredItems = (items || []).filter(
       (item) =>
         item.name.toLowerCase().includes(lowerSearch) &&
         item.parentId === currentParentId &&
@@ -165,6 +163,12 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
           setAddItemVisible(true);
         }}
         onScanBarcode={() => {}}
+      />
+      <Button
+        title={'Test button'}
+        onPress={() => {
+          console.log('test');
+        }}
       />
     </View>
   );

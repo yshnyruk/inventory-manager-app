@@ -17,10 +17,10 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Space, HomeScreenProps, Item } from '../screens/HomeScreen';
 import { COLORS } from '../styles';
-import { getData, setData } from '../services';
 import {
   deleteCasc,
   deleteOne,
+  getFromStorage,
   hasChildren,
   restore,
   restoreCasc,
@@ -29,7 +29,7 @@ import {
 } from '../services/storageService';
 import { HistoryScreenProps } from '../screens/HistoryScreen';
 import { ref, set } from 'firebase/database';
-import { db } from '../services/firebase';
+import { db } from '../services/firebaseService';
 import { AuthContext } from '../contexts/AuthContext';
 type Props = CompositeScreenProps<HistoryScreenProps, HomeScreenProps>;
 
@@ -114,8 +114,8 @@ const SpaceItem = memo(
     });
 
     const getItemsInSpace = async (spaceId: string) => {
-      const spaces: Space[] = await getData('spaces');
-      const items: Item[] = await getData('items');
+      const spaces: Space[] = await getFromStorage('spaces');
+      const items: Item[] = await getFromStorage('items');
 
       const spacesInSpace = spaces.filter(
         (space) => space.parentId === spaceId
@@ -155,7 +155,7 @@ const SpaceItem = memo(
         if (has) {
           Alert.alert(
             'Restore confirmation',
-            `Do you want to restore ${item.name} with all its items inside?`,
+            'Do you want to restore ${item.name} with all its items inside?',
             [
               {
                 text: 'Cancel',

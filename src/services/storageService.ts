@@ -2,29 +2,39 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Item, Space } from '../screens/HomeScreen';
 import { User } from 'firebase/auth';
 import { ref, set } from 'firebase/database';
-import { db } from './firebase';
+import { db } from './firebaseService';
 
-export const getData = async (key: string) => {
+export const getFromStorage = async (key: string) => {
   try {
     const value = await AsyncStorage.getItem(key);
-    return value ? JSON.parse(value) : [];
+    return null != value ? JSON.parse(value) : null;
   } catch (error) {
     console.error('Failed to fetch data:', error);
-    return [];
+    throw error;
   }
 };
 
-export const setData = async (key: string, items: any[]) => {
+export const saveToStorage = async (key: string, items: any[]) => {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(items));
   } catch (error) {
     console.error('Failed to save data:', error);
+    throw error;
+  }
+};
+
+export const removeFromStorage = async (key: string) => {
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch (error) {
+    console.error('Error removing from storage:', error);
+    throw error;
   }
 };
 
 export const getItem = async (id: string, type: string) => {
   try {
-    const data = await getData(type);
+    const data = await getFromStorage(type);
     return data.find((item: { id: string }) => item.id === id) || 'null';
   } catch (error) {
     console.error('Failed to get item:', error);
@@ -34,12 +44,12 @@ export const getItem = async (id: string, type: string) => {
 
 export const setItem = async (id: string, updatedItem: Item, type: string) => {
   try {
-    const data = await getData(type);
+    const data = await getFromStorage(type);
     const index = data.findIndex((item: { id: string }) => item.id === id);
 
     if (index !== -1) {
       data[index] = updatedItem;
-      await setData(type, data);
+      await saveToStorage(type, data);
     }
   } catch (error) {
     console.error('Failed to set item:', error);
@@ -48,8 +58,8 @@ export const setItem = async (id: string, updatedItem: Item, type: string) => {
 
 export const deleteCasc = async (spaceId: string, user: User | null) => {
   try {
-    const spaces = await getData('spaces');
-    const items = await getData('items');
+    const spaces = await getFromStorage('spaces');
+    const items = await getFromStorage('items');
 
     const findChildSpaces = (id: string): Space[] => {
       const childSpaces = spaces.filter((e: Space) => e.parentId === id);
@@ -71,7 +81,7 @@ export const deleteCasc = async (spaceId: string, user: User | null) => {
     const updatedSpaces = spaces.filter(
       (e: Space) => !spacesToDelete.includes(e.id)
     );
-    await setData('spaces', updatedSpaces);
+    await saveToStorage('spaces', updatedSpaces);
 
     const updatedItems = items.filter(
       (item: Item) => !spacesToDelete.includes(item.parentId)
@@ -83,16 +93,16 @@ export const deleteCasc = async (spaceId: string, user: User | null) => {
       await set(itemsRef, updatedItems);
       await set(spacesRef, updatedSpaces);
     }
-    await setData('items', updatedItems);
+    await saveToStorage('items', updatedItems);
   } catch (error) {
     console.error('Failed to delete item:', error);
   }
 };
 
 export const deleteOne = async (id: string, key: string, user: User | null) => {
-  const data = await getData(key);
+  const data = await getFromStorage(key);
   const updatedData = data.filter((e: Item | Space) => e.id !== id);
-  await setData(key, updatedData);
+  await saveToStorage(key, updatedData);
   if (null !== user) {
     const userRef = ref(db, `users/${user.uid}/${key}`);
     await set(userRef, updatedData);
@@ -100,8 +110,8 @@ export const deleteOne = async (id: string, key: string, user: User | null) => {
 };
 
 export const hasChildren = async (spaceId: string): Promise<boolean> => {
-  const spaces = await getData('spaces');
-  const items = await getData('items');
+  const spaces = await getFromStorage('spaces');
+  const items = await getFromStorage('items');
 
   const hasChildPlaces = spaces.some(
     (space: Space) => space.parentId === spaceId
@@ -112,8 +122,8 @@ export const hasChildren = async (spaceId: string): Promise<boolean> => {
 
 export const toHistoryCasc = async (spaceId: string, user: User | null) => {
   try {
-    const spaces = await getData('spaces');
-    const items = await getData('items');
+    const spaces = await getFromStorage('spaces');
+    const items = await getFromStorage('items');
 
     const findChildSpaces = (id: string): Space[] => {
       const childSpaces = spaces.filter((e: Space) => e.parentId === id);
@@ -137,14 +147,14 @@ export const toHistoryCasc = async (spaceId: string, user: User | null) => {
         ? { ...space, activeTo: new Date().toISOString() }
         : space
     );
-    await setData('spaces', updatedSpaces);
+    await saveToStorage('spaces', updatedSpaces);
 
     const updatedItems = items.map((item: Item) =>
       spacesToUpdate.includes(item.parentId)
         ? { ...item, activeTo: new Date().toISOString() }
         : item
     );
-    await setData('items', updatedItems);
+    await saveToStorage('items', updatedItems);
 
     if (null !== user) {
       const spacesRef = ref(db, `users/${user.uid}/spaces`);
@@ -160,11 +170,11 @@ export const toHistoryCasc = async (spaceId: string, user: User | null) => {
 };
 
 export const toHistory = async (id: string, key: string, user: User | null) => {
-  const data: (Item | Space)[] = await getData(key);
+  const data: (Item | Space)[] = await getFromStorage(key);
   const updatedData = data.map((item: any) =>
     item.id === id ? { ...item, activeTo: new Date().toISOString() } : item
   );
-  await setData(key, updatedData);
+  await saveToStorage(key, updatedData);
   if (null !== user) {
     const userRef = ref(db, `users/${user.uid}/${key}`);
     await set(userRef, updatedData);
@@ -176,11 +186,11 @@ export const restore = async (
   type: 'items' | 'spaces',
   user: User | null
 ) => {
-  const data = await getData(type);
+  const data = await getFromStorage(type);
   const updatedData = data.map((item: any) =>
     item.id === id ? { ...item, activeTo: null } : item
   );
-  await setData(type, updatedData);
+  await saveToStorage(type, updatedData);
   if (null !== user) {
     const userRef = ref(db, `users/${user.uid}/${type}`);
     await set(userRef, updatedData);
@@ -189,8 +199,8 @@ export const restore = async (
 };
 
 export const restoreCasc = async (id: string, user: User | null) => {
-  const spaces = await getData('spaces');
-  const items = await getData('items');
+  const spaces = await getFromStorage('spaces');
+  const items = await getFromStorage('items');
 
   const getChildren = (parentId: string) => {
     return spaces.filter((space: any) => space.parentId === parentId);
@@ -222,12 +232,12 @@ export const updateObject = async (
   type: 'items' | 'spaces'
 ) => {
   try {
-    const data: (Item | Space)[] = await getData(type);
+    const data: (Item | Space)[] = await getFromStorage(type);
     const index = data.findIndex((obj) => obj.id === id);
 
     if (index !== -1) {
       data[index] = { ...data[index], ...updatedObject };
-      await setData(type, data);
+      await saveToStorage(type, data);
 
       console.log(`Object with ID ${id} updated successfully.`);
     } else {

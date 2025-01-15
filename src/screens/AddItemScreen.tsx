@@ -11,13 +11,13 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { HomeStackParamList } from '../navigation/stack/HomeStackNavigation';
 import { COLORS } from '../styles';
 import Header from '../components/Header';
-import { getData, setData } from '../services';
 import AddItemForm from '../components/AddItemForm';
 import { Item } from './HomeScreen';
 import * as ImagePicker from 'expo-image-picker';
 import { ref, set } from 'firebase/database';
-import { db } from '../services/firebase';
+import { db } from '../services/firebaseService';
 import { AuthContext } from '../contexts/AuthContext';
+import { getFromStorage, saveToStorage } from '../services/storageService';
 
 type AddItemScreenProps = StackScreenProps<HomeStackParamList, 'AddItem'>;
 
@@ -46,19 +46,19 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
   };
 
   const handleAddItem = async () => {
-    const currentItems = await getData('items');
+    const currentItems = await getFromStorage('items');
     if (existingItem) {
       const updatedItems = currentItems.map((item: Item) =>
         item.id === formData.id ? formData : item
       );
-      await setData('items', updatedItems);
+      await saveToStorage('items', updatedItems);
       if (user) {
         const itemsRef = ref(db, `users/${user.uid}/items`);
         set(itemsRef, updatedItems);
         console.log('formdata:', formData);
       }
     } else {
-      await setData('items', [...currentItems, formData]);
+      await saveToStorage('items', [...currentItems, formData]);
       if (user) {
         const itemsRef = ref(db, `users/${user.uid}/items`);
         set(itemsRef, [...currentItems, formData]);

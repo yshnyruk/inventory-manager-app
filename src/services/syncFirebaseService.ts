@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ref, get, set } from 'firebase/database';
-import { auth, db } from './firebase';
+import { auth, db } from './firebaseService';
 import { Alert } from 'react-native';
 import { Item, Space } from '../screens/HomeScreen';
 import { deepCompare } from './deepCompare';

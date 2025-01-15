@@ -8,8 +8,8 @@ import { View, Pressable, Text, StyleSheet } from 'react-native';
 import { Space } from '../screens/HomeScreen';
 import { HomeScreenProps } from '../screens/HomeScreen';
 import { buildPath } from '../utils';
-import { getData } from '../services';
 import { HistoryScreenProps } from '../screens/HistoryScreen';
+import { getFromStorage } from '../services/storageService';
 
 type Props = CompositeScreenProps<HistoryScreenProps, HomeScreenProps>;
 
@@ -29,7 +29,7 @@ const Link = memo(
     // Effect to build the path of spaces when the component mounts or spaces change
     useEffect(() => {
       const loadLink = async () => {
-        const spaces = await getData('spaces');
+        const spaces = await getFromStorage('spaces');
         const pathRes = buildPath(id, spaces);
         setPath(pathRes);
       };
