@@ -43,6 +43,8 @@ const RemindersScreen = ({ route, navigation }: Props) => {
 
       // Set the scheduled notifications
       setScheduledNotifications(notifications as ScheduledNotificationItem[]);
+
+      console.log('Fetched notifications:', notifications);
     } catch (error) {
       console.error('Error fetching scheduled notifications:', error);
     }

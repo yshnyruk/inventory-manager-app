@@ -6,14 +6,39 @@ import {
   StyleSheet,
   Image,
   Pressable,
+  Modal,
 } from 'react-native';
 import React, { useState } from 'react';
 import { COLORS } from '../styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DateTimePicker, { DateType } from 'react-native-ui-datepicker';
+import { Item } from '../screens/HomeScreen';
 
-export const AddItemForm = ({ formData, setFormData, onSelectPhoto }: any) => {
-  const clearPhoto = () => {
-    setFormData({ ...formData, photoUri: null });
+type AddItemFormProps = {
+  formData: Item;
+  setFormData: (val: Item) => void;
+  onSelectPhoto: () => void;
+};
+
+export const AddItemForm = ({
+  formData,
+  setFormData,
+  onSelectPhoto,
+}: AddItemFormProps) => {
+  const [date, setDate] = useState<DateType>();
+  const [dateOpened, setDateOpened] = useState(false);
+
+  const handleDatePicker = () => {
+    if (date)
+      setFormData({ ...formData, expiryDate: new Date(date?.toString()) });
+    setDateOpened(!dateOpened);
+    console.log(date);
+  };
+
+  const handleDateClean = () => {
+    setFormData({ ...formData, expiryDate: undefined });
+    setDateOpened(!dateOpened);
+    console.log(date);
   };
 
   return (
@@ -28,22 +53,55 @@ export const AddItemForm = ({ formData, setFormData, onSelectPhoto }: any) => {
         style={styles.input}
         placeholder='Number'
         keyboardType='numeric'
-        value={formData.number !== null ? formData.number.toString() : ''}
+        value={formData.number.toString()}
         onChangeText={(text) =>
           setFormData({
             ...formData,
-            number: text ? parseInt(text, 10) : null,
+            number: Number(text.replace(/[^0-9]/g, '')),
           })
         }
       />
-      <TextInput
-        style={styles.input}
-        placeholder='Date of Expiry'
-        value={formData.expiryDate}
-        onChangeText={(text) =>
-          setFormData({ ...formData, expiryDate: new Date(text) })
-        }
-      />
+      <Pressable
+        style={[styles.input, { paddingVertical: 4, paddingHorizontal: 12 }]}
+        onPress={() => setDateOpened(!dateOpened)}
+      >
+        <TextInput
+          placeholder='Expiry Date'
+          value={
+            formData.expiryDate &&
+            new Date(formData.expiryDate).toLocaleDateString()
+          }
+          editable={false}
+          caretHidden={true}
+          pointerEvents='none'
+        />
+      </Pressable>
+      <Modal transparent visible={dateOpened}>
+        <Pressable
+          style={styles.datePickerContainer}
+          onPress={() => setDateOpened(!dateOpened)}
+        >
+          <View style={styles.datePickerContent}>
+            <DateTimePicker
+              mode='single'
+              date={date}
+              onChange={(params) => setDate(params.date)}
+            />
+            <View style={styles.dateButtonsContainer}>
+              <TouchableOpacity onPress={handleDateClean}>
+                <View style={styles.dateButton}>
+                  <Text style={styles.dateButtonText}>Clean</Text>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDatePicker}>
+                <View style={styles.dateButton}>
+                  <Text style={styles.dateButtonText}>Select</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
       <TextInput
         style={styles.input}
         placeholder='Weight/Quantity/Volume'
@@ -56,7 +114,7 @@ export const AddItemForm = ({ formData, setFormData, onSelectPhoto }: any) => {
         style={styles.input}
         placeholder='Additional Information'
         multiline={true}
-        numberOfLines={3}
+        numberOfLines={20}
         value={formData.additionalInf}
         onChangeText={(text) =>
           setFormData({ ...formData, additionalInf: text })
@@ -66,7 +124,10 @@ export const AddItemForm = ({ formData, setFormData, onSelectPhoto }: any) => {
         {formData.photoUri ? (
           <View>
             <Image source={{ uri: formData.photoUri }} style={styles.img} />
-            <Pressable style={styles.imgClose} onPress={clearPhoto}>
+            <Pressable
+              style={styles.imgClose}
+              onPress={() => setFormData({ ...formData, photoUri: '' })}
+            >
               <Text style={styles.x}>x</Text>
             </Pressable>
           </View>
@@ -133,6 +194,31 @@ const styles = StyleSheet.create({
   },
   x: {
     color: 'white',
+  },
+  datePickerContent: {
+    width: '80%',
+    height: '50%',
+    backgroundColor: 'white',
+    borderRadius: 12,
+  },
+  datePickerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dateButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  dateButton: {
+    paddingHorizontal: 48,
+    padding: 12,
+    borderRadius: 24,
+    backgroundColor: COLORS['light-green'],
+  },
+  dateButtonText: {
+    color: COLORS['dark-text-green'],
+    fontWeight: 'bold',
   },
 });
 

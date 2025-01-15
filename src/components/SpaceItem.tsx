@@ -3,7 +3,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { memo, useEffect, useState } from 'react';
+import { memo, useContext, useEffect, useState } from 'react';
 import {
   Pressable,
   View,
@@ -28,6 +28,9 @@ import {
   toHistoryCasc,
 } from '../services/storageService';
 import { HistoryScreenProps } from '../screens/HistoryScreen';
+import { ref, set } from 'firebase/database';
+import { db } from '../services/firebase';
+import { AuthContext } from '../contexts/AuthContext';
 type Props = CompositeScreenProps<HistoryScreenProps, HomeScreenProps>;
 
 const SpaceItem = memo(
@@ -56,6 +59,7 @@ const SpaceItem = memo(
     const screenWidth = Dimensions.get('window').width;
     const [itemNames, setItemNames] = useState<string>('');
     const [screenName, setScreenName] = useState('');
+    const { user } = useContext(AuthContext);
 
     const loadItemNames = async () => {
       const names = await formatItemNames(item.id);
@@ -164,7 +168,7 @@ const SpaceItem = memo(
               {
                 text: 'OK',
                 onPress: async () => {
-                  await restoreCasc(item.id);
+                  await restoreCasc(item.id, user);
                   onDeleteSuccess();
                 },
               },
@@ -172,11 +176,11 @@ const SpaceItem = memo(
             { cancelable: false }
           );
         } else {
-          await restore(item.id, 'spaces');
+          await restore(item.id, 'spaces', user);
           onDeleteSuccess();
         }
       } else {
-        await restore(item.id, 'items');
+        await restore(item.id, 'items', user);
       }
       onDeleteSuccess();
     };
@@ -201,7 +205,7 @@ const SpaceItem = memo(
               {
                 text: 'OK',
                 onPress: async () => {
-                  await deleteCasc(item.id);
+                  await deleteCasc(item.id, user);
                   onDeleteSuccess();
                 },
               },
@@ -209,11 +213,11 @@ const SpaceItem = memo(
             { cancelable: false }
           );
         } else {
-          await deleteOne(item.id, 'spaces');
+          await deleteOne(item.id, 'spaces', user);
           onDeleteSuccess();
         }
       } else {
-        await deleteOne(item.id, 'items');
+        await deleteOne(item.id, 'items', user);
       }
       onDeleteSuccess();
     };
@@ -238,7 +242,7 @@ const SpaceItem = memo(
               {
                 text: 'OK',
                 onPress: async () => {
-                  await toHistoryCasc(item.id);
+                  await toHistoryCasc(item.id, user);
                   onDeleteSuccess();
                 },
               },
@@ -246,11 +250,11 @@ const SpaceItem = memo(
             { cancelable: false }
           );
         } else {
-          await toHistory(item.id, 'spaces');
+          await toHistory(item.id, 'spaces', user);
           onDeleteSuccess();
         }
       } else {
-        await toHistory(item.id, 'items');
+        await toHistory(item.id, 'items', user);
       }
       onDeleteSuccess();
     };
@@ -298,16 +302,16 @@ const SpaceItem = memo(
             <View style={styles.spaceItemAllText}>
               <Text style={styles.spaceItemTitle}>{item.name}</Text>
               {type === 'space' ? (
-                <Text style={styles.itemsInSpace}>
+                <Text style={styles.itemsInSpace} numberOfLines={1}>
                   {itemNames ? itemNames : 'empty'}
                 </Text>
               ) : (
-                <Text style={styles.spaceItemDesc}>
+                <Text style={styles.spaceItemDesc} numberOfLines={1}>
                   {(item as Item).additionalInf}
                 </Text>
               )}
             </View>
-            <Icon name='arrow-right' size={10} color='#49454F' />
+            <Icon name='chevron-right' size={10} color='#49454F' />
           </Pressable>
           <View style={styles.divider} />
         </Animated.View>

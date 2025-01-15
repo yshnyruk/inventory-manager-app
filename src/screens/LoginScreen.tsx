@@ -12,35 +12,35 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { COLORS } from '../styles/theme';
 import { TextInput } from 'react-native-gesture-handler';
 import { loginUser } from '../services/authService';
-import { useAuth } from '../contexts/AuthContext';
 
 type LoginScreenProps = StackScreenProps<LoginStackParamList, 'Login'>;
 
 const LoginScreen = ({ route, navigation }: LoginScreenProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { initializeApp } = useAuth();
 
   const handleBack = () => {
+    navigation.goBack();
+
     // Clear email and password
     setEmail('');
     setPassword('');
 
-    navigation.goBack();
     console.log('Back');
   };
 
   const handleLogin = async () => {
-    const user = await loginUser(email, password);
-
-    if (user) {
-      // Clear email and password
-      setEmail('');
-      setPassword('');
-
-      navigation.goBack();
-      console.log('Login');
+    const user = loginUser(email, password);
+    if (null === user) {
+      return;
     }
+
+    navigation.goBack();
+    // Clear email and password
+    setEmail('');
+    setPassword('');
+
+    console.log('Login');
   };
 
   const handleCreateAccount = () => {
@@ -50,7 +50,6 @@ const LoginScreen = ({ route, navigation }: LoginScreenProps) => {
 
     // Navigate to Register screen
     navigation.navigate('Register');
-
     console.log('Create account');
   };
 

@@ -53,7 +53,7 @@ const HistoryScreen = ({ navigation, route }: HistoryScreenProps) => {
 
     const filteredSpaces = spaces.filter(
       (e) =>
-        e.activeTo !== undefined &&
+        e.activeTo !== null &&
         e.name.toLowerCase().includes(lowerSearch) &&
         (e.parentId === currentSpaceId || hasActiveParent(e.parentId, spaces)) // Додано перевірку на батька
     );
@@ -65,7 +65,7 @@ const HistoryScreen = ({ navigation, route }: HistoryScreenProps) => {
 
     const filteredItems = items.filter(
       (e) =>
-        e.activeTo !== undefined &&
+        e.activeTo !== null &&
         e.name.toLowerCase().includes(lowerSearch) &&
         (e.parentId === currentSpaceId || hasActiveParent(e.parentId, spaces)) // Додано перевірку на батька
     );
@@ -81,7 +81,7 @@ const HistoryScreen = ({ navigation, route }: HistoryScreenProps) => {
         search={search}
         setSearch={setSearch}
         navigation={navigation}
-        leftIcon='arrow-left'
+        leftIcon='chevron-left'
       />
       <Link
         id={currentSpaceId}

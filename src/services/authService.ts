@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { auth } from './firebase';
 import {
-  updateProfile,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
+  User,
 } from 'firebase/auth';
 
 export const registerUser = async (
@@ -75,7 +77,7 @@ export const loginUser = async (email: string, password: string) => {
 
     const user = userCredential.user;
     alert(`Welcome back, ${user.displayName}!`);
-    console.log('User signed in:', user);
+    console.log('User signed in:', user.email);
     return userCredential.user;
   } catch (error) {
     // Handle errors

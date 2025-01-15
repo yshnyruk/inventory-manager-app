@@ -5,17 +5,18 @@ import {
 import { View, Text, StyleSheet, Linking } from 'react-native';
 import { COLORS } from '../styles';
 import DrawerButton from './DrawerButton';
-import { useAuth } from '../contexts/AuthContext';
 import { logoutUser } from '../services/authService';
+import { useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 
 const CustomDrawerContent = (props: DrawerContentComponentProps) => {
-  const { user } = useAuth();
+  const { user } = useContext(AuthContext);
 
   return (
     <DrawerContentScrollView contentContainerStyle={styles.drawerContainer}>
       <View style={styles.userGreeting}>
         <Text style={styles.greetingText}>
-          Hello, {user ? user.displayName : 'User'} :)
+          Hello, {null === user ? 'User' : user.displayName} :)
         </Text>
       </View>
       <DrawerButton
@@ -28,14 +29,14 @@ const CustomDrawerContent = (props: DrawerContentComponentProps) => {
         iconName='gear'
         onPress={() => props.navigation.navigate('SettingsStack')}
       />
-      {user ? (
-        <DrawerButton label='Log Out' onPress={() => logoutUser()} />
-      ) : (
+      {null === user ? (
         <DrawerButton
           label='Log In'
           iconName='user'
           onPress={() => props.navigation.navigate('LoginStack')}
         />
+      ) : (
+        <DrawerButton label='Log out' onPress={() => logoutUser()} />
       )}
     </DrawerContentScrollView>
   );

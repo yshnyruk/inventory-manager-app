@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StackScreenProps } from '@react-navigation/stack';
 import { HomeStackParamList } from '../navigation/stack/HomeStackNavigation';
 import { COLORS } from '../styles';
@@ -15,11 +15,26 @@ import { getData, setData } from '../services';
 import AddItemForm from '../components/AddItemForm';
 import { Item } from './HomeScreen';
 import * as ImagePicker from 'expo-image-picker';
+import { ref, set } from 'firebase/database';
+import { db } from '../services/firebase';
+import { AuthContext } from '../contexts/AuthContext';
 
 type AddItemScreenProps = StackScreenProps<HomeStackParamList, 'AddItem'>;
 
 const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
+  const [formData, setFormData] = useState<Item>({
+    id: Date.now().toString(),
+    name: '',
+    number: 1,
+    activeFrom: new Date().toISOString(),
+    activeTo: null,
+    parentId: route.params.parentId || '',
+    emoji: '',
+    photoUri: '',
+  });
   const existingItem = route.params?.item;
+  const { user } = useContext(AuthContext);
+
   const selectPhoto = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -30,22 +45,6 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
     }
   };
 
-  const [formData, setFormData] = useState(
-    () =>
-      existingItem || {
-        id: new Date().toISOString(),
-        name: '',
-        number: 1,
-        expiryDate: '',
-        weightVolume: '',
-        additionalInf: '',
-        activeFrom: new Date(),
-        parentId: route.params?.parentId || 'Root',
-        photoUri: '',
-      }
-  );
-
-  // Function to handle adding a new item
   const handleAddItem = async () => {
     const currentItems = await getData('items');
     if (existingItem) {
@@ -53,12 +52,29 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
         item.id === formData.id ? formData : item
       );
       await setData('items', updatedItems);
+      if (user) {
+        const itemsRef = ref(db, `users/${user.uid}/items`);
+        set(itemsRef, updatedItems);
+        console.log('formdata:', formData);
+      }
     } else {
       await setData('items', [...currentItems, formData]);
+      if (user) {
+        const itemsRef = ref(db, `users/${user.uid}/items`);
+        set(itemsRef, [...currentItems, formData]);
+        console.log('formdata:', formData);
+      }
     }
 
     navigation.goBack();
   };
+
+  useEffect(() => {
+    if (existingItem) {
+      setFormData(existingItem);
+      console.log('Existing item:', existingItem);
+    }
+  }, []);
 
   return (
     <View>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { HomeStackParamList } from '../navigation/stack/HomeStackNavigation';
@@ -12,7 +12,9 @@ import Content from '../components/Content';
 import { useFocusEffect } from '@react-navigation/native';
 import { getData, setData } from '../services';
 import { COLORS } from '../styles';
-import { useAuth } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext';
+import { push, ref, set } from 'firebase/database';
+import { db } from '../services/firebase';
 
 // Define the type for HomeScreenProps
 export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
@@ -22,8 +24,8 @@ export interface Space {
   id: string;
   name: string;
   emoji?: string;
-  activeFrom: Date;
-  activeTo?: Date;
+  activeFrom: string;
+  activeTo?: string | null;
   parentId: string;
 }
 
@@ -31,14 +33,14 @@ export interface Space {
 export interface Item {
   id: string;
   name: string;
-  additionalInf: string;
-  activeFrom: Date;
-  activeTo?: Date;
+  additionalInf?: string;
+  activeFrom: string;
+  activeTo?: string | null;
   parentId: string;
   number: number;
-  expiryDate: Date;
-  weightVolume: string;
-  photoUri?: string;
+  expiryDate?: Date;
+  weightVolume?: string;
+  photoUri: string;
   emoji?: string;
 }
 
@@ -53,7 +55,7 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
   const [addItemVisible, setAddItemVisible] = useState(false);
   // Determine the current space ID based on route parameters
   const currentSpaceId = route.params?.parentId || 'Root';
-  const { user, syncing } = useAuth();
+  const { user, dataLoaded } = useContext(AuthContext);
 
   // Function to load data from AsyncStorage
   const loadData = async () => {
@@ -67,21 +69,26 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [])
+      console.log('Refershing data...');
+    }, [dataLoaded])
   );
 
   // Function to handle adding a new space
   const handleAddSpace = (name: string) => {
     const newSpace: Space = {
-      id: Date.now().toString(),
+      id: new Date().toISOString(),
       name,
-      activeFrom: new Date(),
+      activeFrom: new Date().toISOString(),
       parentId: currentSpaceId,
     };
 
     setSpaces((prevSpaces) => {
       const updatedSpaces = [...prevSpaces, newSpace];
       setData('spaces', updatedSpaces);
+      if (user) {
+        const spacesRef = ref(db, `users/${user.uid}/spaces`);
+        set(spacesRef, updatedSpaces);
+      }
       return updatedSpaces;
     });
 
@@ -97,14 +104,14 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
       (item) =>
         item.name.toLowerCase().includes(lowerSearch) &&
         item.parentId === currentParentId &&
-        item.activeTo === undefined
+        item.activeTo === null
     );
 
     const filteredItems = items.filter(
       (item) =>
         item.name.toLowerCase().includes(lowerSearch) &&
         item.parentId === currentParentId &&
-        item.activeTo === undefined
+        item.activeTo === null
     );
 
     return { filteredSpaces, filteredItems };

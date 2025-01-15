@@ -105,7 +105,7 @@ const UseNotifications = ({ setReminder, item }: Props) => {
   };
 
   const scheduleNotification = async () => {
-    if (selectedDate && !isNaN(selectedDate.value)) {
+    if (selectedDate && !isNaN(selectedDate.value) && item.expiryDate) {
       try {
         const reminderDate = getReminderDate(
           item.expiryDate,

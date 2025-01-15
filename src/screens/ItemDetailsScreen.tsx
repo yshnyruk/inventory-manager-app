@@ -93,7 +93,6 @@ const ItemDetailsScreen = ({ route, navigation }: Props) => {
 
   const handlePressReminder = async () => {
     console.log('Tap on Reminder');
-
     if (!item) {
       console.warn('Item is not loaded yet.');
       return;
@@ -101,6 +100,14 @@ const ItemDetailsScreen = ({ route, navigation }: Props) => {
 
     if (!item.expiryDate) {
       alert('Please set an expiry date');
+      return;
+    }
+
+    const now = new Date();
+    const expiryDate = new Date(item.expiryDate);
+
+    if (now > expiryDate) {
+      alert('Oops... Expiry date cannot be earlier than today.');
       return;
     }
 
