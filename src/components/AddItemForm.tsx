@@ -30,13 +30,16 @@ export const AddItemForm = ({
 
   const handleDatePicker = () => {
     if (date)
-      setFormData({ ...formData, expiryDate: new Date(date?.toString()) });
+      setFormData({
+        ...formData,
+        expiryDate: new Date(date?.toString()).toISOString(),
+      });
     setDateOpened(!dateOpened);
     console.log(date);
   };
 
   const handleDateClean = () => {
-    setFormData({ ...formData, expiryDate: undefined });
+    setFormData({ ...formData, expiryDate: null });
     setDateOpened(!dateOpened);
     console.log(date);
   };
@@ -68,8 +71,9 @@ export const AddItemForm = ({
         <TextInput
           placeholder='Expiry Date'
           value={
-            formData.expiryDate &&
-            new Date(formData.expiryDate).toLocaleDateString()
+            formData.expiryDate
+              ? new Date(formData.expiryDate).toLocaleDateString()
+              : undefined
           }
           editable={false}
           caretHidden={true}
@@ -104,7 +108,7 @@ export const AddItemForm = ({
       </Modal>
       <TextInput
         style={styles.input}
-        placeholder='Weight/Quantity/Volume'
+        placeholder='Weight'
         value={formData.weightVolume}
         onChangeText={(text) =>
           setFormData({ ...formData, weightVolume: text })

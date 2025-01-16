@@ -31,6 +31,7 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
     parentId: route.params.parentId || '',
     emoji: '',
     photoUri: '',
+    expiryDate: null,
   });
   const existingItem = route.params?.item;
   const { user } = useContext(AuthContext);
@@ -51,18 +52,22 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
       const updatedItems = currentItems.map((item: Item) =>
         item.id === formData.id ? formData : item
       );
+      console.log('Edited in AsyncStorage:', formData);
+      console.log('User:', user);
       await setData('items', updatedItems);
-      if (user) {
+      if (null !== user) {
         const itemsRef = ref(db, `users/${user.uid}/items`);
         set(itemsRef, updatedItems);
-        console.log('formdata:', formData);
+        console.log('Edited in firebase:', formData);
       }
     } else {
       await setData('items', [...currentItems, formData]);
-      if (user) {
+      console.log('Added to AsyncStorage:', formData);
+      console.log('User:', user);
+      if (null !== user) {
         const itemsRef = ref(db, `users/${user.uid}/items`);
         set(itemsRef, [...currentItems, formData]);
-        console.log('formdata:', formData);
+        console.log('Added to firebase:', formData);
       }
     }
 
@@ -78,7 +83,10 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
 
   return (
     <View>
-      <Header label='Add Item' navigation={navigation} />
+      <Header
+        label={existingItem ? `Editing ${existingItem.name}` : 'Add item'}
+        navigation={navigation}
+      />
       <AddItemForm
         formData={formData}
         setFormData={setFormData}
@@ -93,12 +101,12 @@ const AddItemScreen = ({ navigation, route }: AddItemScreenProps) => {
 
 const styles = StyleSheet.create({
   button: {
-    width: '100%',
     backgroundColor: COLORS['dark-green'],
     borderRadius: 24,
     height: 48,
     alignItems: 'center',
     justifyContent: 'center',
+    marginHorizontal: 24,
   },
   buttonText: {
     textAlign: 'center',

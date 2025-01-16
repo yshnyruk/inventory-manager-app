@@ -87,6 +87,15 @@ const SpaceItem = memo(
         if (Math.abs(gestureState.dy) > Math.abs(gestureState.dx)) {
           return;
         }
+        if (routeName === 'Home' && gestureState.dx > 0) {
+          return;
+        }
+        if (Math.abs(gestureState.dx) > screenWidth * 0.6) {
+          return;
+        }
+        if (gestureState.dx > screenWidth * 0.6) {
+          return;
+        }
         translateX.setValue(gestureState.dx);
       },
       onPanResponderRelease: (_, gestureState) => {
@@ -124,13 +133,21 @@ const SpaceItem = memo(
 
       const filteredSpaces =
         routeName === 'HistoryMain'
-          ? spacesInSpace.filter((space) => space.activeTo !== undefined)
-          : spacesInSpace.filter((space) => space.activeTo === undefined);
+          ? spacesInSpace.filter(
+              (space) => space.activeTo !== null || space.activeTo !== undefined
+            )
+          : spacesInSpace.filter(
+              (space) => space.activeTo === null || space.activeTo === undefined
+            );
 
       const filteredItems =
         routeName === 'HistoryMain'
-          ? itemsInSpace.filter((item) => item.activeTo !== undefined)
-          : itemsInSpace.filter((item) => item.activeTo === undefined);
+          ? itemsInSpace.filter(
+              (space) => space.activeTo !== null || space.activeTo !== undefined
+            )
+          : itemsInSpace.filter(
+              (space) => space.activeTo === null || space.activeTo === undefined
+            );
 
       return [...filteredSpaces, ...filteredItems];
     };
@@ -144,7 +161,6 @@ const SpaceItem = memo(
       if (names.length > maxItemsToShow) {
         return `${truncatedNames}, ...`;
       }
-
       return truncatedNames;
     };
 
@@ -176,8 +192,27 @@ const SpaceItem = memo(
             { cancelable: false }
           );
         } else {
-          await restore(item.id, 'spaces', user);
-          onDeleteSuccess();
+          Alert.alert(
+            'Restore confirmation',
+            `Do you want to restore ${item.name}?`,
+            [
+              {
+                text: 'Cancel',
+                onPress: () =>
+                  Animated.spring(translateX, {
+                    toValue: 0,
+                    useNativeDriver: true,
+                  }).start(),
+              },
+              {
+                text: 'OK',
+                onPress: async () => {
+                  await restore(item.id, 'spaces', user);
+                  onDeleteSuccess();
+                },
+              },
+            ]
+          );
         }
       } else {
         await restore(item.id, 'items', user);
@@ -213,13 +248,53 @@ const SpaceItem = memo(
             { cancelable: false }
           );
         } else {
-          await deleteOne(item.id, 'spaces', user);
-          onDeleteSuccess();
+          Alert.alert(
+            'Delete confirmation',
+            `Do you want to delete ${item.name} for EVER?`,
+            [
+              {
+                text: 'Cancel',
+                onPress: () =>
+                  Animated.spring(translateX, {
+                    toValue: 0,
+                    useNativeDriver: true,
+                  }).start(),
+              },
+              {
+                text: 'OK',
+                onPress: async () => {
+                  await deleteOne(item.id, 'spaces', user);
+                  onDeleteSuccess();
+                },
+              },
+            ],
+            { cancelable: false }
+          );
         }
       } else {
-        await deleteOne(item.id, 'items', user);
+        Alert.alert(
+          'Delete confirmation',
+          `Do you want to delete ${item.name} for EVER?`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () =>
+                Animated.spring(translateX, {
+                  toValue: 0,
+                  useNativeDriver: true,
+                }).start(),
+            },
+            {
+              text: 'OK',
+              onPress: async () => {
+                await deleteOne(item.id, 'items', user);
+                onDeleteSuccess();
+              },
+            },
+          ],
+          { cancelable: false }
+        );
       }
-      onDeleteSuccess();
     };
 
     const handleDelete = async () => {
@@ -250,13 +325,52 @@ const SpaceItem = memo(
             { cancelable: false }
           );
         } else {
-          await toHistory(item.id, 'spaces', user);
-          onDeleteSuccess();
+          Alert.alert(
+            'Delete confirmation',
+            `Do you want to delete ${item.name}?`,
+            [
+              {
+                text: 'Cancel',
+                onPress: () =>
+                  Animated.spring(translateX, {
+                    toValue: 0,
+                    useNativeDriver: true,
+                  }).start(),
+              },
+              {
+                text: 'OK',
+                onPress: async () => {
+                  await toHistory(item.id, 'spaces', user);
+                  onDeleteSuccess();
+                },
+              },
+            ],
+            { cancelable: false }
+          );
         }
       } else {
-        await toHistory(item.id, 'items', user);
+        Alert.alert(
+          'Delete confirmation',
+          `Do you want to detlete ${item.name}?`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () =>
+                Animated.spring(translateX, {
+                  toValue: 0,
+                  useNativeDriver: true,
+                }).start(),
+            },
+            {
+              text: 'OK',
+              onPress: async () => {
+                await toHistory(item.id, 'items', user);
+              },
+            },
+          ],
+          { cancelable: false }
+        );
       }
-      onDeleteSuccess();
     };
 
     const onSelectEmoji = () => {
@@ -270,6 +384,12 @@ const SpaceItem = memo(
     const routeName: string = route.name;
     return (
       <View>
+        <View style={styles.trashIconWrapper}>
+          <Icon name='trash' size={24} color='red' />
+        </View>
+        <View style={styles.restoreIconWrapper}>
+          <Icon name='recycle' size={24} color='green' />
+        </View>
         <Animated.View
           style={{
             transform: [{ translateX }],
@@ -383,6 +503,16 @@ const styles = StyleSheet.create({
   emoji: {
     fontSize: 32,
     marginRight: 18,
+  },
+  trashIconWrapper: {
+    position: 'absolute',
+    top: 24,
+    right: 24,
+  },
+  restoreIconWrapper: {
+    position: 'absolute',
+    top: 24,
+    left: 24,
   },
 });
 

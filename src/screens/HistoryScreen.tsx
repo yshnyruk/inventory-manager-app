@@ -43,7 +43,7 @@ const HistoryScreen = ({ navigation, route }: HistoryScreenProps) => {
     const parent = spaces.find((space) => space.id === id);
 
     if (!parent) return false;
-    if (parent.activeTo === undefined) return true;
+    if (parent.activeTo === null) return true;
 
     return hasActiveParent(parent.parentId, spaces);
   };
@@ -54,6 +54,7 @@ const HistoryScreen = ({ navigation, route }: HistoryScreenProps) => {
     const filteredSpaces = spaces.filter(
       (e) =>
         e.activeTo !== null &&
+        e.activeTo !== undefined &&
         e.name.toLowerCase().includes(lowerSearch) &&
         (e.parentId === currentSpaceId || hasActiveParent(e.parentId, spaces)) // Додано перевірку на батька
     );
@@ -66,6 +67,7 @@ const HistoryScreen = ({ navigation, route }: HistoryScreenProps) => {
     const filteredItems = items.filter(
       (e) =>
         e.activeTo !== null &&
+        e.activeTo !== undefined &&
         e.name.toLowerCase().includes(lowerSearch) &&
         (e.parentId === currentSpaceId || hasActiveParent(e.parentId, spaces)) // Додано перевірку на батька
     );

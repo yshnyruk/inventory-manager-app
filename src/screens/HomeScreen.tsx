@@ -38,7 +38,7 @@ export interface Item {
   activeTo?: string | null;
   parentId: string;
   number: number;
-  expiryDate?: Date;
+  expiryDate: string | null;
   weightVolume?: string;
   photoUri: string;
   emoji?: string;
@@ -79,6 +79,7 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
       id: new Date().toISOString(),
       name,
       activeFrom: new Date().toISOString(),
+      activeTo: null,
       parentId: currentSpaceId,
     };
 
@@ -92,6 +93,8 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
       return updatedSpaces;
     });
 
+    console.log('New space:', newSpace);
+
     setModalVisible(false);
   };
 
@@ -104,14 +107,14 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
       (item) =>
         item.name.toLowerCase().includes(lowerSearch) &&
         item.parentId === currentParentId &&
-        item.activeTo === null
+        (item.activeTo === null || item.activeTo === undefined)
     );
 
     const filteredItems = items.filter(
       (item) =>
         item.name.toLowerCase().includes(lowerSearch) &&
         item.parentId === currentParentId &&
-        item.activeTo === null
+        (item.activeTo === null || item.activeTo === undefined)
     );
 
     return { filteredSpaces, filteredItems };

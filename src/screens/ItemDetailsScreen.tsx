@@ -70,6 +70,8 @@ const ItemDetailsScreen = ({ route, navigation }: Props) => {
           const parsedDate = new Date(item.activeFrom);
           setActiveFrom(parsedDate);
         }
+
+        console.log('Item:', item);
       })();
     }, [])
   );
